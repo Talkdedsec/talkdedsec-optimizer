@@ -107,7 +107,7 @@ function createWindow() {
     minHeight: 700,
     show: false,
     frame: false,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#000000",
     webPreferences: { preload: join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   win.once("ready-to-show", () => win?.show());
