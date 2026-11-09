@@ -1,6 +1,6 @@
 {
-  "name": "talkdedsec-optimizer",
-  "productName": "Talkdedsec Optimizer",
+  "name": "talkdedsec",
+  "productName": "Talkdedsec",
   "version": "1.0.0",
   "description": "Windows performance, privacy and cleanup tweaks with one-click undo. No account, no telemetry.",
   "author": "Talkdedsec",
@@ -12,6 +12,7 @@
     "build": "tsc --noEmit && vite build",
     "start": "electron .",
     "test": "node --test test/engine.test.ts",
+    "pack": "npm run build && electron-builder --win dir",
     "dist": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
@@ -34,8 +35,8 @@
     "vite-plugin-electron": "^0.29.0"
   },
   "build": {
-    "appId": "com.talkdedsec.optimizer",
-    "productName": "Talkdedsec Optimizer",
+    "appId": "com.talkdedsec.app",
+    "productName": "Talkdedsec",
     "copyright": "Copyright (c) 2026 Talkdedsec",
     "directories": {
       "output": "release"
@@ -51,6 +52,9 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
+    },
+    "extraMetadata": {
+      "description": "Talkdedsec"
     }
   },
   "allowScripts": {

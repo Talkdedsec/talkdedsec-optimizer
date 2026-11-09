@@ -539,7 +539,7 @@ export function Preferences() {
           <div className={SECTION_LABEL}>{d.settings.about}</div>
           <Divider className="my-4" />
           <div className="flex items-center justify-between text-[13px]">
-            <span className="font-medium">Talkdedsec Optimizer</span>
+            <span className="font-medium">Talkdedsec</span>
             <span className="text-white/40">{d.settings.version} {info.version}</span>
           </div>
           <p className="mt-3 flex items-start gap-2 text-[12px] leading-relaxed text-white/35">

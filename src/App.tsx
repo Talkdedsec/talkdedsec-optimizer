@@ -99,7 +99,7 @@ function Shell({ route, onRoute, children }: { route: Route; onRoute: (r: Route)
           <div className="glass-soft flex items-center gap-2.5 px-3 py-2.5">
             <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[13px] font-semibold leading-none text-white/70 ring-1 ring-inset ring-white/10">T</span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[12px] font-medium leading-tight">Talkdedsec Optimizer</div>
+              <div className="truncate text-[12px] font-medium leading-tight">Talkdedsec</div>
               <div className="mt-0.5 flex items-center gap-1 text-[10px] text-white/40">
                 <Shield className="size-3" />
                 <span className="truncate">v{info.version} · {info.elevated ? d.admin.yes : d.admin.no}</span>

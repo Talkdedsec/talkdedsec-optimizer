@@ -182,7 +182,7 @@ $old=(Get-ItemProperty $k -Name $n -ErrorAction SilentlyContinue).$n
 try{
   Set-ItemProperty $k -Name $n -Value 0 -Type DWord -ErrorAction Stop
   Enable-ComputerRestore -Drive "$env:SystemDrive\" -ErrorAction SilentlyContinue
-  Checkpoint-Computer -Description 'Talkdedsec Optimizer' -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
+  Checkpoint-Computer -Description 'Talkdedsec' -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
   $true|ConvertTo-Json
 }catch{$false|ConvertTo-Json}
 finally{
