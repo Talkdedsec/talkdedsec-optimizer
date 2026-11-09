@@ -1,0 +1,2324 @@
+[
+ {
+  "id": "perf.win32-priority-separation",
+  "category": "performance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/PriorityControl",
+    "name": "Win32PrioritySeparation",
+    "type": "REG_DWORD",
+    "value": 38
+   }
+  ]
+ },
+ {
+  "id": "perf.disable-paging-executive",
+  "category": "performance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "minRamGb": 12
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Session Manager/Memory Management",
+    "name": "DisablePagingExecutive",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "perf.svchost-split-threshold",
+  "category": "performance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "minRamGb": 8
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "$kb=[math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory/1KB); Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name 'SvcHostSplitThresholdInKB' -Value $kb -Type DWord",
+    "revert": "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control' -Name 'SvcHostSplitThresholdInKB' -Value 380000 -Type DWord"
+   }
+  ]
+ },
+ {
+  "id": "perf.system-responsiveness",
+  "category": "performance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile",
+    "name": "SystemResponsiveness",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "perf.games-task-priority",
+  "category": "gaming",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile/Tasks/Games",
+    "name": "GPU Priority",
+    "type": "REG_DWORD",
+    "value": 8
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile/Tasks/Games",
+    "name": "Priority",
+    "type": "REG_DWORD",
+    "value": 6
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile/Tasks/Games",
+    "name": "Scheduling Category",
+    "type": "REG_SZ",
+    "value": "High"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile/Tasks/Games",
+    "name": "SFIO Priority",
+    "type": "REG_SZ",
+    "value": "High"
+   }
+  ]
+ },
+ {
+  "id": "perf.disable-power-throttling",
+  "category": "performance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Power/PowerThrottling",
+    "name": "PowerThrottlingOff",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "perf.enable-hags",
+  "category": "gaming",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "minWindowsBuild": 19041
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/GraphicsDrivers",
+    "name": "HwSchMode",
+    "type": "REG_DWORD",
+    "value": 2
+   }
+  ]
+ },
+ {
+  "id": "perf.startup-delay",
+  "category": "performance",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Serialize",
+    "name": "StartupDelayInMSec",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "perf.menu-show-delay",
+  "category": "performance",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "MenuShowDelay",
+    "type": "REG_SZ",
+    "value": "0"
+   }
+  ]
+ },
+ {
+  "id": "perf.app-timeouts",
+  "category": "performance",
+  "impact": "moderate",
+  "elevated": false,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "HungAppTimeout",
+    "type": "REG_SZ",
+    "value": "1000"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "WaitToKillAppTimeout",
+    "type": "REG_SZ",
+    "value": "2000"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "AutoEndTasks",
+    "type": "REG_SZ",
+    "value": "1"
+   }
+  ]
+ },
+ {
+  "id": "perf.wait-to-kill-service",
+  "category": "performance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control",
+    "name": "WaitToKillServiceTimeout",
+    "type": "REG_SZ",
+    "value": "2000"
+   }
+  ]
+ },
+ {
+  "id": "memory.disable-compression",
+  "category": "memory",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "minRamGb": 16
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Disable-MMAgent -MemoryCompression -ErrorAction Stop",
+    "revert": "Enable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue"
+   }
+  ]
+ },
+ {
+  "id": "memory.clear-pagefile-off",
+  "category": "memory",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Session Manager/Memory Management",
+    "name": "ClearPageFileAtShutdown",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "memory.pagefile-fixed",
+  "category": "memory",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "$cs=Get-CimInstance Win32_ComputerSystem; if($cs.AutomaticManagedPagefile){Set-CimInstance -InputObject $cs -Property @{AutomaticManagedPagefile=$false}|Out-Null}; $mb=[math]::Round($cs.TotalPhysicalMemory/1MB*1.5); $pf=Get-CimInstance Win32_PageFileSetting -ErrorAction SilentlyContinue; if($pf){Set-CimInstance -InputObject $pf -Property @{InitialSize=$mb;MaximumSize=$mb}|Out-Null}else{New-CimInstance -ClassName Win32_PageFileSetting -Property @{Name=($env:SystemDrive+'\\pagefile.sys');InitialSize=$mb;MaximumSize=$mb}|Out-Null}",
+    "revert": "$cs=Get-CimInstance Win32_ComputerSystem; Set-CimInstance -InputObject $cs -Property @{AutomaticManagedPagefile=$true}|Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "power.high-performance-plan",
+  "category": "power",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg /setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 2>$null; if($LASTEXITCODE -ne 0){$o=powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61; $g=[regex]::Match(\"$o\",\"[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}\").Value; if($g){powercfg /setactive $g}else{throw \"no high performance plan\"}}",
+    "revert": "powercfg /setactive 381b4222-f694-41f0-9685-ff5bb260df2e"
+   }
+  ]
+ },
+ {
+  "id": "power.disable-core-parking",
+  "category": "power",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -setacvalueindex scheme_current sub_processor 0cc5b647-c1df-4637-891a-dec35c318583 100; powercfg -setdcvalueindex scheme_current sub_processor 0cc5b647-c1df-4637-891a-dec35c318583 100; powercfg -setactive scheme_current",
+    "revert": "powercfg -setacvalueindex scheme_current sub_processor 0cc5b647-c1df-4637-891a-dec35c318583 0; powercfg -setactive scheme_current"
+   }
+  ]
+ },
+ {
+  "id": "power.min-processor-state",
+  "category": "power",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 100; powercfg -setactive scheme_current",
+    "revert": "powercfg -setacvalueindex scheme_current sub_processor PROCTHROTTLEMIN 5; powercfg -setactive scheme_current"
+   }
+  ]
+ },
+ {
+  "id": "power.usb-selective-suspend",
+  "category": "power",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -setacvalueindex scheme_current 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg -setdcvalueindex scheme_current 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0; powercfg -setactive scheme_current",
+    "revert": "powercfg -setacvalueindex scheme_current 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 1; powercfg -setactive scheme_current"
+   }
+  ]
+ },
+ {
+  "id": "power.pcie-link-state",
+  "category": "power",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -setacvalueindex scheme_current 501a4d13-42af-4429-9fd1-a8218c268e20 ee12f906-d277-404b-b6da-e5fa1a576df5 0; powercfg -setactive scheme_current",
+    "revert": "powercfg -setacvalueindex scheme_current 501a4d13-42af-4429-9fd1-a8218c268e20 ee12f906-d277-404b-b6da-e5fa1a576df5 2; powercfg -setactive scheme_current"
+   }
+  ]
+ },
+ {
+  "id": "power.disk-never-sleep",
+  "category": "power",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -change -disk-timeout-ac 0",
+    "revert": "powercfg -change -disk-timeout-ac 20"
+   }
+  ]
+ },
+ {
+  "id": "power.disable-adaptive-brightness",
+  "category": "power",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "laptopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 fbd9aa66-9553-4097-ba44-ed6e9d65eab8 0; powercfg -setdcvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 fbd9aa66-9553-4097-ba44-ed6e9d65eab8 0; powercfg -setactive scheme_current",
+    "revert": "powercfg -setacvalueindex scheme_current 7516b95f-f776-4464-8c53-06167f40cc99 fbd9aa66-9553-4097-ba44-ed6e9d65eab8 1; powercfg -setactive scheme_current"
+   }
+  ]
+ },
+ {
+  "id": "power.fast-startup-off",
+  "category": "power",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Session Manager/Power",
+    "name": "HiberbootEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "svc.sysmain",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "ssdOnly": true
+  },
+  "actions": [
+   {
+    "kind": "service",
+    "service": "SysMain",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.wsearch",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WSearch",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.telemetry",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "DiagTrack",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "dmwappushservice",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.error-reporting",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WerSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.diagnostic-policy",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "DPS",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "WdiServiceHost",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "WdiSystemHost",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "diagsvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.print-spooler",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "noPrinter": true
+  },
+  "actions": [
+   {
+    "kind": "service",
+    "service": "Spooler",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "PrintNotify",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.fax",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "Fax",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.remote-registry",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "RemoteRegistry",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.retail-demo",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "RetailDemo",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.maps",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "MapsBroker",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.xbox",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "XblAuthManager",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "XblGameSave",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "XboxNetApiSvc",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "XboxGipSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.parental-controls",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WpcMonSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.program-compatibility",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "PcaSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.geolocation",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "lfsvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.phone",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "PhoneSvc",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "TapiSrv",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.bluetooth",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "noBluetooth": true
+  },
+  "actions": [
+   {
+    "kind": "service",
+    "service": "bthserv",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "BTAGService",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "BthAvctpSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.biometric",
+  "category": "services",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WbioSrvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.secondary-logon",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "seclogon",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.mobile-hotspot",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "icssvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.delivery-optimization",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "DoSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.wmp-network",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WMPNetworkSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.insider",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "wisvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.touch-keyboard",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "service",
+    "service": "TabletInputService",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.work-folders",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "WorkFolderSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.payments-nfc",
+  "category": "services",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "SEMgrSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.netbios-helper",
+  "category": "services",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "lmhosts",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.ssdp-upnp",
+  "category": "services",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "SSDPSRV",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "upnphost",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "svc.connected-devices",
+  "category": "services",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "service",
+    "service": "CDPSvc",
+    "startup": "Disabled",
+    "stop": true
+   },
+   {
+    "kind": "service",
+    "service": "CDPUserSvc",
+    "startup": "Disabled",
+    "stop": true
+   }
+  ]
+ },
+ {
+  "id": "game.disable-gamedvr",
+  "category": "gaming",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "System/GameConfigStore",
+    "name": "GameDVR_Enabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/GameDVR",
+    "name": "AppCaptureEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/GameDVR",
+    "name": "AllowGameDVR",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "game.disable-game-bar",
+  "category": "gaming",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/GameBar",
+    "name": "ShowStartupPanel",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/GameBar",
+    "name": "UseNexusForGameBarEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/GameDVR",
+    "name": "AppCaptureEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "game.disable-fullscreen-optimizations",
+  "category": "gaming",
+  "impact": "moderate",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "System/GameConfigStore",
+    "name": "GameDVR_FSEBehaviorMode",
+    "type": "REG_DWORD",
+    "value": 2
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "System/GameConfigStore",
+    "name": "GameDVR_HonorUserFSEBehaviorMode",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "System/GameConfigStore",
+    "name": "GameDVR_DXGIHonorFSEWindowsCompatible",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "System/GameConfigStore",
+    "name": "GameDVR_EFSEFeatureFlags",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "game.enable-game-mode",
+  "category": "gaming",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/GameBar",
+    "name": "AllowAutoGameMode",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/GameBar",
+    "name": "AutoGameModeEnabled",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "game.variable-refresh-rate",
+  "category": "gaming",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 19041
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/DirectX/UserGpuPreferences",
+    "name": "DirectXUserGlobalSettings",
+    "type": "REG_SZ",
+    "value": "SwapEffectUpgradeEnable=1;"
+   }
+  ]
+ },
+ {
+  "id": "game.input-queue-size",
+  "category": "gaming",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Services/mouclass/Parameters",
+    "name": "MouseDataQueueSize",
+    "type": "REG_DWORD",
+    "value": 20
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Services/kbdclass/Parameters",
+    "name": "KeyboardDataQueueSize",
+    "type": "REG_DWORD",
+    "value": 20
+   }
+  ]
+ },
+ {
+  "id": "net.disable-nagle",
+  "category": "network",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { New-ItemProperty -Path $_.PSPath -Name 'TcpAckFrequency' -Value 1 -PropertyType DWord -Force | Out-Null; New-ItemProperty -Path $_.PSPath -Name 'TCPNoDelay' -Value 1 -PropertyType DWord -Force | Out-Null }",
+    "revert": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters\\Interfaces' | ForEach-Object { Remove-ItemProperty -Path $_.PSPath -Name 'TcpAckFrequency' -ErrorAction SilentlyContinue; Remove-ItemProperty -Path $_.PSPath -Name 'TCPNoDelay' -ErrorAction SilentlyContinue }"
+   }
+  ]
+ },
+ {
+  "id": "net.throttling-index",
+  "category": "network",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/Multimedia/SystemProfile",
+    "name": "NetworkThrottlingIndex",
+    "type": "REG_DWORD",
+    "value": 4294967295
+   }
+  ]
+ },
+ {
+  "id": "net.tcp-global",
+  "category": "network",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "netsh int tcp set global autotuninglevel=normal | Out-Null; netsh int tcp set global rss=enabled | Out-Null; netsh int tcp set global ecncapability=disabled | Out-Null; netsh int tcp set global timestamps=disabled | Out-Null",
+    "revert": "netsh int tcp set global autotuninglevel=normal | Out-Null; netsh int tcp set global rss=enabled | Out-Null; netsh int tcp set global ecncapability=default | Out-Null; netsh int tcp set global timestamps=default | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "net.port-exhaustion",
+  "category": "network",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Services/Tcpip/Parameters",
+    "name": "MaxUserPort",
+    "type": "REG_DWORD",
+    "value": 65534
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Services/Tcpip/Parameters",
+    "name": "TcpTimedWaitDelay",
+    "type": "REG_DWORD",
+    "value": 30
+   }
+  ]
+ },
+ {
+  "id": "net.disable-llmnr",
+  "category": "network",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows NT/DNSClient",
+    "name": "EnableMulticast",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "net.delivery-optimization-off",
+  "category": "network",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/DeliveryOptimization",
+    "name": "DODownloadMode",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "net.fast-dns",
+  "category": "network",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Get-NetAdapter | Where-Object Status -eq 'Up' | ForEach-Object { Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ServerAddresses ('1.1.1.1','8.8.8.8') -ErrorAction SilentlyContinue }; Clear-DnsClientCache",
+    "revert": "Get-NetAdapter | Where-Object Status -eq 'Up' | ForEach-Object { Set-DnsClientServerAddress -InterfaceIndex $_.ifIndex -ResetServerAddresses -ErrorAction SilentlyContinue }; Clear-DnsClientCache"
+   }
+  ]
+ },
+ {
+  "id": "net.disable-lso",
+  "category": "network",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Disable-NetAdapterLso -Name '*' -ErrorAction SilentlyContinue",
+    "revert": "Enable-NetAdapterLso -Name '*' -ErrorAction SilentlyContinue"
+   }
+  ]
+ },
+ {
+  "id": "net.disable-netbios-adapters",
+  "category": "network",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters\\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 2 -Type DWord -ErrorAction SilentlyContinue }",
+    "revert": "Get-ChildItem 'HKLM:\\SYSTEM\\CurrentControlSet\\Services\\NetBT\\Parameters\\Interfaces' | ForEach-Object { Set-ItemProperty -Path $_.PSPath -Name 'NetbiosOptions' -Value 0 -Type DWord -ErrorAction SilentlyContinue }"
+   }
+  ]
+ },
+ {
+  "id": "priv.telemetry-policy",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/DataCollection",
+    "name": "AllowTelemetry",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows/CurrentVersion/Policies/DataCollection",
+    "name": "MaxTelemetryAllowed",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "priv.advertising-id",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/AdvertisingInfo",
+    "name": "Enabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.activity-history",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/System",
+    "name": "EnableActivityFeed",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/System",
+    "name": "PublishUserActivities",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/System",
+    "name": "UploadUserActivities",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.background-apps",
+  "category": "privacy",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/BackgroundAccessApplications",
+    "name": "GlobalUserDisabled",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/AppPrivacy",
+    "name": "LetAppsRunInBackground",
+    "type": "REG_DWORD",
+    "value": 2
+   }
+  ]
+ },
+ {
+  "id": "priv.cortana-websearch",
+  "category": "privacy",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/Windows Search",
+    "name": "AllowCortana",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/Windows Search",
+    "name": "DisableWebSearch",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/Windows Search",
+    "name": "ConnectedSearchUseWeb",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/SearchSettings",
+    "name": "IsDynamicSearchBoxEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.content-delivery",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "SilentInstalledAppsEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "SystemPaneSuggestionsEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "SubscribedContent-338388Enabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "SubscribedContent-338389Enabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "SubscribedContent-310093Enabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/ContentDeliveryManager",
+    "name": "PreInstalledAppsEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.tailored-feedback",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Privacy",
+    "name": "TailoredExperiencesWithDiagnosticDataEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Siuf/Rules",
+    "name": "NumberOfSIUFInPeriod",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/DataCollection",
+    "name": "DoNotShowFeedbackNotifications",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "priv.location",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows/CurrentVersion/CapabilityAccessManager/ConsentStore/location",
+    "name": "Value",
+    "type": "REG_SZ",
+    "value": "Deny"
+   }
+  ]
+ },
+ {
+  "id": "priv.copilot",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 22000
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Policies/Microsoft/Windows/WindowsCopilot",
+    "name": "TurnOffWindowsCopilot",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "ShowCopilotButton",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.recall",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 26100
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/WindowsAI",
+    "name": "DisableAIDataAnalysis",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "priv.widgets",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 22000
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Dsh",
+    "name": "AllowNewsAndInterests",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "TaskbarDa",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.edge-background",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Edge",
+    "name": "StartupBoostEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Edge",
+    "name": "BackgroundModeEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "priv.onedrive-autostart",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Remove-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'OneDrive' -ErrorAction SilentlyContinue",
+    "revert": "$p=Join-Path $env:LOCALAPPDATA 'Microsoft\\OneDrive\\OneDrive.exe'; if(Test-Path $p){Set-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -Name 'OneDrive' -Value ('\"'+$p+'\" /background')}"
+   }
+  ]
+ },
+ {
+  "id": "priv.store-auto-update",
+  "category": "privacy",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/WindowsStore",
+    "name": "AutoDownload",
+    "type": "REG_DWORD",
+    "value": 2
+   }
+  ]
+ },
+ {
+  "id": "priv.update-auto-restart",
+  "category": "privacy",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Policies/Microsoft/Windows/WindowsUpdate/AU",
+    "name": "NoAutoRebootWithLoggedOnUsers",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "ui.visual-effects-performance",
+  "category": "visual",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/VisualEffects",
+    "name": "VisualFXSetting",
+    "type": "REG_DWORD",
+    "value": 2
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "UserPreferencesMask",
+    "type": "REG_BINARY",
+    "value": "9012038010000000"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "DragFullWindows",
+    "type": "REG_SZ",
+    "value": "0"
+   }
+  ]
+ },
+ {
+  "id": "ui.transparency",
+  "category": "visual",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Themes/Personalize",
+    "name": "EnableTransparency",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "ui.window-animations",
+  "category": "visual",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop/WindowMetrics",
+    "name": "MinAnimate",
+    "type": "REG_SZ",
+    "value": "0"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "TaskbarAnimations",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "ui.explorer-chrome",
+  "category": "visual",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "DisallowShaking",
+    "type": "REG_DWORD",
+    "value": 1
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "ListviewAlphaSelect",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "ListviewShadow",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "ui.snap-assist",
+  "category": "visual",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 22000
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "SnapAssist",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/Explorer/Advanced",
+    "name": "EnableSnapAssistFlyout",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "disp.cleartype",
+  "category": "display",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "FontSmoothing",
+    "type": "REG_SZ",
+    "value": "2"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "FontSmoothingType",
+    "type": "REG_DWORD",
+    "value": 2
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "FontSmoothingGamma",
+    "type": "REG_DWORD",
+    "value": 1400
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "FontSmoothingOrientation",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "disp.color-calibration",
+  "category": "display",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SOFTWARE/Microsoft/Windows NT/CurrentVersion/ICM/Calibration",
+    "name": "CalibrationManagementEnabled",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "disp.night-light",
+  "category": "display",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "$b='HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CloudStore\\Store\\DefaultAccount\\Current'; Get-ChildItem $b -ErrorAction SilentlyContinue | Where-Object { $_.PSChildName -like '*bluelightreduction*' } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue"
+   }
+  ]
+ },
+ {
+  "id": "disp.auto-hdr-off",
+  "category": "display",
+  "impact": "moderate",
+  "elevated": false,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 22000
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/DirectX/UserGpuPreferences",
+    "name": "AutoHDREnable",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "disp.no-screensaver-sleep",
+  "category": "display",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Desktop",
+    "name": "ScreenSaveActive",
+    "type": "REG_SZ",
+    "value": "0"
+   },
+   {
+    "kind": "powershell",
+    "script": "powercfg -change -monitor-timeout-ac 0",
+    "revert": "powercfg -change -monitor-timeout-ac 10"
+   }
+  ]
+ },
+ {
+  "id": "input.mouse-acceleration",
+  "category": "input",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Mouse",
+    "name": "MouseSpeed",
+    "type": "REG_SZ",
+    "value": "0"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Mouse",
+    "name": "MouseThreshold1",
+    "type": "REG_SZ",
+    "value": "0"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Mouse",
+    "name": "MouseThreshold2",
+    "type": "REG_SZ",
+    "value": "0"
+   }
+  ]
+ },
+ {
+  "id": "input.mouse-sensitivity-native",
+  "category": "input",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Mouse",
+    "name": "MouseSensitivity",
+    "type": "REG_SZ",
+    "value": "10"
+   }
+  ]
+ },
+ {
+  "id": "input.keyboard-repeat",
+  "category": "input",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Keyboard",
+    "name": "KeyboardDelay",
+    "type": "REG_SZ",
+    "value": "0"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Keyboard",
+    "name": "KeyboardSpeed",
+    "type": "REG_SZ",
+    "value": "31"
+   }
+  ]
+ },
+ {
+  "id": "input.accessibility-shortcuts",
+  "category": "input",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Accessibility/StickyKeys",
+    "name": "Flags",
+    "type": "REG_SZ",
+    "value": "506"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Accessibility/Keyboard Response",
+    "name": "Flags",
+    "type": "REG_SZ",
+    "value": "122"
+   },
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Accessibility/ToggleKeys",
+    "name": "Flags",
+    "type": "REG_SZ",
+    "value": "58"
+   }
+  ]
+ },
+ {
+  "id": "input.pointer-trails",
+  "category": "input",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Control Panel/Mouse",
+    "name": "MouseTrails",
+    "type": "REG_SZ",
+    "value": "0"
+   }
+  ]
+ },
+ {
+  "id": "disk.ntfs-last-access",
+  "category": "storage",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "fsutil behavior set disablelastaccess 1 | Out-Null",
+    "revert": "fsutil behavior set disablelastaccess 2 | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "disk.ntfs-8dot3",
+  "category": "storage",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "fsutil behavior set disable8dot3 1 | Out-Null",
+    "revert": "fsutil behavior set disable8dot3 2 | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "disk.ntfs-memory-usage",
+  "category": "storage",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "minRamGb": 8
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "fsutil behavior set memoryusage 2 | Out-Null",
+    "revert": "fsutil behavior set memoryusage 1 | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "disk.enable-trim",
+  "category": "storage",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "ssdOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "fsutil behavior set DisableDeleteNotify 0 | Out-Null",
+    "revert": "fsutil behavior set DisableDeleteNotify 1 | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "disk.hibernation-off",
+  "category": "storage",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "desktopOnly": true
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "powercfg -h off",
+    "revert": "powercfg -h on"
+   }
+  ]
+ },
+ {
+  "id": "disk.prefetch-ssd",
+  "category": "storage",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requiresRestart": true,
+  "requires": {
+   "ssdOnly": true
+  },
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Session Manager/Memory Management/PrefetchParameters",
+    "name": "EnablePrefetcher",
+    "type": "REG_DWORD",
+    "value": 0
+   },
+   {
+    "kind": "registry",
+    "hive": "HKLM",
+    "key": "SYSTEM/CurrentControlSet/Control/Session Manager/Memory Management/PrefetchParameters",
+    "name": "EnableSuperfetch",
+    "type": "REG_DWORD",
+    "value": 0
+   }
+  ]
+ },
+ {
+  "id": "disk.reserved-storage",
+  "category": "storage",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": true,
+  "requires": {
+   "minWindowsBuild": 18362
+  },
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "DISM /Online /Set-ReservedStorageState /State:Disabled | Out-Null",
+    "revert": "DISM /Online /Set-ReservedStorageState /State:Enabled | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "disk.storage-sense",
+  "category": "storage",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": true,
+  "actions": [
+   {
+    "kind": "registry",
+    "hive": "HKCU",
+    "key": "Software/Microsoft/Windows/CurrentVersion/StorageSense/Parameters/StoragePolicy",
+    "name": "01",
+    "type": "REG_DWORD",
+    "value": 1
+   }
+  ]
+ },
+ {
+  "id": "clean.temp-files",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "foreach($p in @($env:TEMP, (Join-Path $env:WINDIR 'Temp'))){ if(Test-Path $p){ Get-ChildItem -Path $p -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }"
+   }
+  ]
+ },
+ {
+  "id": "clean.windows-update-cache",
+  "category": "maintenance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Stop-Service wuauserv -Force -ErrorAction SilentlyContinue; Stop-Service bits -Force -ErrorAction SilentlyContinue; $d=Join-Path $env:WINDIR 'SoftwareDistribution\\Download'; if(Test-Path $d){ Get-ChildItem $d -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }; Start-Service bits -ErrorAction SilentlyContinue; Start-Service wuauserv -ErrorAction SilentlyContinue"
+   }
+  ]
+ },
+ {
+  "id": "clean.shader-cache",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "foreach($p in @((Join-Path $env:LOCALAPPDATA 'D3DSCache'),(Join-Path $env:LOCALAPPDATA 'NVIDIA\\DXCache'),(Join-Path $env:LOCALAPPDATA 'NVIDIA\\GLCache'),(Join-Path $env:LOCALAPPDATA 'AMD\\DxCache'),(Join-Path $env:LOCALAPPDATA 'AMD\\GLCache'),(Join-Path $env:LOCALAPPDATA 'Intel\\ShaderCache'))){ if(Test-Path $p){ Get-ChildItem $p -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue } }"
+   }
+  ]
+ },
+ {
+  "id": "clean.icon-thumbnail-cache",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue; Start-Sleep -Milliseconds 700; $e=Join-Path $env:LOCALAPPDATA 'Microsoft\\Windows\\Explorer'; if(Test-Path $e){ Get-ChildItem $e -Filter '*cache*.db' -Force -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue }; if(-not (Get-Process -Name explorer -ErrorAction SilentlyContinue)){ Start-Process explorer }"
+   }
+  ]
+ },
+ {
+  "id": "clean.recycle-bin",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": false,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Clear-RecycleBin -Force -ErrorAction SilentlyContinue"
+   }
+  ]
+ },
+ {
+  "id": "clean.dns-cache",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Clear-DnsClientCache; ipconfig /flushdns | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "clean.delivery-optimization-files",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "if(Get-Command Delete-DeliveryOptimizationCache -ErrorAction SilentlyContinue){ Delete-DeliveryOptimizationCache -Force -ErrorAction SilentlyContinue }; $d=Join-Path $env:WINDIR 'SoftwareDistribution\\DeliveryOptimization'; if(Test-Path $d){ Get-ChildItem $d -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue }"
+   }
+  ]
+ },
+ {
+  "id": "clean.optimize-volumes",
+  "category": "maintenance",
+  "impact": "safe",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "Get-Volume | Where-Object { $_.DriveLetter -and $_.FileSystemType -eq 'NTFS' } | ForEach-Object { Optimize-Volume -DriveLetter $_.DriveLetter -ErrorAction SilentlyContinue }"
+   }
+  ]
+ },
+ {
+  "id": "clean.event-logs",
+  "category": "maintenance",
+  "impact": "moderate",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "wevtutil el | ForEach-Object { wevtutil cl \"$_\" 2>$null }"
+   }
+  ]
+ },
+ {
+  "id": "clean.winsock-reset",
+  "category": "maintenance",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": false,
+  "requiresRestart": true,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "netsh winsock reset | Out-Null; netsh int ip reset | Out-Null; ipconfig /flushdns | Out-Null"
+   }
+  ]
+ },
+ {
+  "id": "clean.repair-system-files",
+  "category": "maintenance",
+  "impact": "advanced",
+  "elevated": true,
+  "reversible": false,
+  "actions": [
+   {
+    "kind": "powershell",
+    "script": "DISM /Online /Cleanup-Image /RestoreHealth | Out-Null; sfc /scannow | Out-Null"
+   }
+  ]
+ }
+]
