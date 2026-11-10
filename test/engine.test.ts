@@ -105,7 +105,7 @@ test("startup switch round trip and leftover removal on real keys", async () => 
   const run = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
   const approved = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
   try {
-    await runPs(`Set-ItemProperty -LiteralPath '${run}' -Name '${name}' -Value 'cmd.exe /c rem' -Type String`);
+    await runPs(`if (-not (Test-Path -LiteralPath '${run}')) { New-Item -Path '${run}' -Force | Out-Null }; Set-ItemProperty -LiteralPath '${run}' -Name '${name}' -Value 'cmd.exe /c rem' -Type String`);
     const find = async () => (await listStartup()).find((i) => i.id === `HKCU|Run|${name}`);
     assert.equal((await find())?.enabled, true);
     assert.equal(await setStartup(`HKCU|Run|${name}`, false), true);
