@@ -1,7 +1,7 @@
 {
   "name": "talkdedsec",
   "productName": "Talkdedsec",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Windows performance, privacy and cleanup tweaks with one-click undo. No account, no telemetry.",
   "author": "Talkdedsec",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "start": "electron .",
     "test": "node --test test/engine.test.ts",
     "pack": "npm run build && electron-builder --win dir",
-    "dist": "npm run build && electron-builder --win nsis"
+    "dist": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "lucide-react": "^0.474.0",
@@ -54,7 +54,10 @@
       "dist-electron"
     ],
     "win": {
-      "target": "nsis",
+      "target": [
+        "nsis",
+        "portable"
+      ],
       "requestedExecutionLevel": "requireAdministrator",
       "icon": "build/icon.png"
     },
@@ -65,6 +68,9 @@
     },
     "extraMetadata": {
       "description": "Talkdedsec"
+    },
+    "portable": {
+      "artifactName": "Talkdedsec-Portable-${version}.${ext}"
     }
   },
   "allowScripts": {

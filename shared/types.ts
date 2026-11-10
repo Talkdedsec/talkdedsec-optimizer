@@ -90,7 +90,16 @@ export interface RunResult {
   requiresRestart: boolean;
 }
 
-export interface Settings { lang: Lang; createRestorePoint: boolean; lastScan: ScanResult | null }
+export interface Settings { lang: Lang; createRestorePoint: boolean; checkUpdates: boolean; lastScan: ScanResult | null }
+
+export interface StartupItem { id: string; name: string; command: string; scope: "user" | "machine"; source: "registry" | "folder"; enabled: boolean }
+export interface InstalledApp { id: string; kind: "program" | "store"; name: string; publisher: string; version: string; sizeMb: number }
+export interface Leftover { id: string; kind: "folder" | "registry"; path: string; sizeMb: number }
+/** error is a message from Windows, or one of: bad-id, still-installed */
+export interface UninstallResult { ok: boolean; error?: string; leftovers: Leftover[] }
+export interface Metrics { freeRamMb: number; processes: number; services: number }
+export interface HistoryEntry { at: string; action: "apply" | "revert"; ids: string[]; applied: number; failed: number; before: Metrics | null; after: Metrics | null }
+export interface UpdateInfo { version: string; url: string; canInstall: boolean }
 export interface AppInfo { version: string; elevated: boolean }
 
 export interface Api {
@@ -105,6 +114,13 @@ export interface Api {
   restorePoint(): Promise<boolean>;
   restartWindows(): Promise<void>;
   openExternal(url: string): Promise<void>;
+  startup: { list(): Promise<StartupItem[]>; set(id: string, enabled: boolean): Promise<boolean> };
+  apps: { list(): Promise<InstalledApp[]>; uninstall(id: string): Promise<UninstallResult>; removeLeftovers(ids: string[]): Promise<number> };
+  history: { list(): Promise<HistoryEntry[]>; clear(): Promise<void> };
+  /** export: false when cancelled. import: the tweak ids in the chosen file, null when cancelled or unreadable. */
+  profile: { export(): Promise<boolean>; import(): Promise<string[] | null> };
+  /** check: null when up to date or offline. install: downloads, verifies and starts the installer, then the app quits. */
+  update: { check(): Promise<UpdateInfo | null>; install(): Promise<boolean> };
   window: {
     minimize(): void;
     toggleMaximize(): void;

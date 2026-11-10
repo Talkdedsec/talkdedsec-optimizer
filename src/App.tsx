@@ -1,16 +1,20 @@
-import { Gauge, type LucideIcon, Settings2, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
+import { Gauge, type LucideIcon, Settings2, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles, Wrench } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
 import logo from "./assets/logo.png";
+import type { UpdateInfo } from "../shared/types.ts";
 import { Background } from "./Background.tsx";
+import { fmt } from "./i18n.ts";
 import { Dashboard, Optimize, Preferences, Scan } from "./pages.tsx";
 import { AppProvider, useApp } from "./state.tsx";
+import { Tools } from "./tools.tsx";
 import { cx } from "./ui.tsx";
 
-export type Route = "dashboard" | "scan" | "optimize" | "settings";
+export type Route = "dashboard" | "scan" | "optimize" | "tools" | "settings";
 const NAV: [Route, LucideIcon][] = [
   ["dashboard", Gauge],
   ["scan", Sparkles],
   ["optimize", SlidersHorizontal],
+  ["tools", Wrench],
   ["settings", Settings2],
 ];
 
@@ -63,8 +67,18 @@ export function LogoMark({ size = 28 }: { size?: number }) {
 }
 
 function Shell({ route, onRoute, children }: { route: Route; onRoute: (r: Route) => void; children: ReactNode }) {
-  const { d, info } = useApp();
+  const { d, info, settings } = useApp();
   const Shield = info.elevated ? ShieldCheck : ShieldAlert;
+  const [update, setUpdate] = useState<UpdateInfo | null>(null);
+  const [updating, setUpdating] = useState<"idle" | "busy" | "failed">("idle");
+  useEffect(() => void window.api.update.check().then(setUpdate, () => setUpdate(null)), [settings.checkUpdates]);
+  const runUpdate = async () => {
+    if (!update) return;
+    if (!update.canInstall) return void window.api.openExternal(update.url);
+    setUpdating("busy");
+    // On success the app quits and the installer takes over.
+    if (!(await window.api.update.install())) setUpdating("failed");
+  };
   return (
     <div className="relative z-10 flex h-full">
       <aside className="flex w-[236px] shrink-0 flex-col border-r border-white/[0.07] bg-black/25 backdrop-blur-2xl">
@@ -99,6 +113,20 @@ function Shell({ route, onRoute, children }: { route: Route; onRoute: (r: Route)
               <p className="mt-1.5 text-[11px] leading-relaxed text-white/40">{d.admin.hint}</p>
             </div>
           )}
+          {update && (
+            <div className="mb-3 rounded-2xl border border-white/[0.12] bg-white/[0.04] px-3.5 py-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/70">{fmt(d.update.available, { version: update.version })}</div>
+              {updating === "failed" && <p className="mt-1.5 text-[11px] leading-relaxed text-white/40">{d.update.failed}</p>}
+              <button
+                type="button"
+                disabled={updating === "busy"}
+                onClick={() => void runUpdate()}
+                className="no-drag mt-2.5 w-full rounded-full bg-white py-1.5 text-[12px] font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {updating === "busy" ? d.update.downloading : update.canInstall ? d.update.install : d.update.open}
+              </button>
+            </div>
+          )}
           <div className="glass-soft flex items-center gap-2.5 px-3 py-2.5">
             <LogoMark size={32} />
             <div className="min-w-0 flex-1">
@@ -127,6 +155,7 @@ function Routes() {
         {route === "dashboard" && <Dashboard go={setRoute} />}
         {route === "scan" && <Scan />}
         {route === "optimize" && <Optimize />}
+        {route === "tools" && <Tools />}
         {route === "settings" && <Preferences />}
       </div>
     </Shell>

@@ -315,7 +315,7 @@ function TweakRow({ tweak, unsuitable, checked, onToggle }: { tweak: Tweak; unsu
   );
 }
 
-const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) => (
+export const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) => (
   <button
     type="button"
     aria-pressed={active}
@@ -491,8 +491,29 @@ function LanguageSegment() {
 }
 
 export function Preferences() {
-  const { d, info, settings, applied, patch, revert } = useApp();
+  const { d, info, settings, applied, patch, apply, revert } = useApp();
   const [confirming, setConfirming] = useState(false);
+  const [imported, setImported] = useState<string[] | null>(null);
+  const [profileNote, setProfileNote] = useState<string | null>(null);
+
+  const exportProfile = async () => {
+    if (await window.api.profile.export()) setProfileNote(d.settings.exported);
+  };
+  const importProfile = async () => {
+    const ids = await window.api.profile.import();
+    if (ids?.length) setImported(ids);
+    else if (ids) setProfileNote(d.settings.importBad);
+  };
+  const applyImported = async () => {
+    if (!imported) return;
+    setBusy(true);
+    try {
+      setProfileNote(summary(d, await apply(imported)));
+    } finally {
+      setBusy(false);
+      setImported(null);
+    }
+  };
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<string | null>(null);
 
@@ -514,6 +535,19 @@ export function Preferences() {
           <SettingRow title={d.settings.language} hint={d.settings.languageHint}><LanguageSegment /></SettingRow>
           <SettingRow title={d.settings.restorePoint} hint={d.settings.restorePointHint}>
             <Switch label={d.settings.restorePoint} checked={settings.createRestorePoint} onChange={(v) => void patch({ createRestorePoint: v })} />
+          </SettingRow>
+          <SettingRow title={d.settings.updates} hint={d.settings.updatesHint}>
+            <Switch label={d.settings.updates} checked={settings.checkUpdates} onChange={(v) => void patch({ checkUpdates: v })} />
+          </SettingRow>
+          <SettingRow title={d.settings.profile} hint={profileNote ?? d.settings.profileHint}>
+            <div className="flex items-center gap-2">
+              {imported ? (
+                <Button variant="primary" size="sm" disabled={busy} onClick={() => void applyImported()}>{busy && <Spinner className={DARK_SPINNER} />}{fmt(d.settings.importApply, { count: imported.length })}</Button>
+              ) : (
+                <Button size="sm" onClick={() => void importProfile()}>{d.settings.importBtn}</Button>
+              )}
+              <Button size="sm" disabled={applied.size === 0} onClick={() => void exportProfile()}>{d.settings.exportBtn}</Button>
+            </div>
           </SettingRow>
         </div>
         <div className="glass divide-y divide-white/[0.06]">

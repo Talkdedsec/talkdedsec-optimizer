@@ -1,15 +1,20 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { app, BrowserWindow, ipcMain, nativeTheme, shell } from "electron";
-import type { AppInfo, BackupEntry, RunResult, Settings, Tweak, TweakResult } from "../shared/types.ts";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, net, shell } from "electron";
+import type { AppInfo, BackupEntry, HistoryEntry, Leftover, Metrics, RunResult, Settings, Tweak, TweakResult, UpdateInfo } from "../shared/types.ts";
 import { analyze, applyScript, BY_ID, revertScript } from "./engine.ts";
 import { deepClean, flushRam, isElevated, restorePoint, runJson, scanHardware } from "./ps.ts";
+import { isAppId, isNewer, listApps, listStartup, measure, removeLeftovers, setStartup, uninstallApp } from "./tools.ts";
 
 type Backups = Record<string, { appliedAt: string; entries: BackupEntry[] }>;
 type RawResult = { id: string; ok: boolean; error?: string; skipped?: boolean; previous?: BackupEntry[] | BackupEntry };
 
-const DEFAULTS: Settings = { lang: "tr", createRestorePoint: true, lastScan: null };
+type History = { entries: HistoryEntry[] };
+const REPO = "Talkdedsec/talkdedsec-optimizer";
+
+const DEFAULTS: Settings = { lang: "tr", createRestorePoint: true, checkUpdates: true, lastScan: null };
 const userFile = (name: string) => join(app.getPath("userData"), name);
 
 async function readJson<T>(name: string, fallback: T): Promise<T> {
@@ -47,6 +52,17 @@ function summarize(results: TweakResult[], started: number, restorePointMade: bo
   };
 }
 
+/** Logs a run that changed something, with the machine's numbers before and after it. */
+async function record(action: HistoryEntry["action"], run: RunResult, before: Metrics | null): Promise<RunResult> {
+  const ids = run.results.filter((r) => r.ok && !r.skipped).map((r) => r.id);
+  if (ids.length) {
+    const { entries } = await readJson<History>("history.json", { entries: [] });
+    entries.unshift({ at: new Date().toISOString(), action, ids, applied: ids.length, failed: run.failed, before, after: await measure() });
+    await writeJson("history.json", { entries: entries.slice(0, 200) });
+  }
+  return run;
+}
+
 async function apply(ids: string[]): Promise<RunResult> {
   const started = Date.now();
   const tweaks = [...new Set(ids)].map((id) => BY_ID.get(id)).filter((t): t is Tweak => !!t);
@@ -54,6 +70,7 @@ async function apply(ids: string[]): Promise<RunResult> {
   const runnable = tweaks.filter((t) => admin || !t.elevated);
   if (runnable.length === 0) return summarize(tweaks.map((t) => ({ id: t.id, ok: false, error: "needs-admin" })), started, false);
 
+  const before = await measure();
   const made = admin && (await readSettings()).createRestorePoint ? await restorePoint() : false;
   const raw = new Map(list(await runJson<RawResult[]>(applyScript(runnable), timeoutFor(runnable))).map((r) => [r.id, r]));
   const backups = await readBackups();
@@ -73,7 +90,7 @@ async function apply(ids: string[]): Promise<RunResult> {
   await writeJson("backups.json", backups);
   // A tweak that failed midway has already changed something; put those parts back so nothing is left half-applied.
   if (halfDone.length) await runJson(revertScript(halfDone), timeoutFor([]));
-  return summarize(results, started, made);
+  return record("apply", summarize(results, started, made), before);
 }
 
 async function revert(ids: string[]): Promise<RunResult> {
@@ -83,6 +100,7 @@ async function revert(ids: string[]): Promise<RunResult> {
     const tweak = BY_ID.get(id);
     return tweak && backups[id] ? [{ tweak, entries: backups[id].entries }] : [];
   });
+  const before = items.length ? await measure() : null;
   const raw = new Map(
     (items.length ? list(await runJson<RawResult[]>(revertScript(items), timeoutFor([]))) : []).map((r) => [r.id, r]),
   );
@@ -94,9 +112,71 @@ async function revert(ids: string[]): Promise<RunResult> {
     return { id, ok: r.ok, error: r.error || undefined };
   });
   await writeJson("backups.json", backups);
-  return summarize(results, started, false);
+  return record("revert", summarize(results, started, false), before);
 }
 
+let pendingUpdate: { url: string; sha256: string; name: string } | null = null;
+
+// The only network request the app makes. It carries no user data; the setting turns it off.
+async function checkUpdate(): Promise<UpdateInfo | null> {
+  try {
+    const res = await net.fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { accept: "application/vnd.github+json" } });
+    if (!res.ok) return null;
+    const rel = (await res.json()) as { tag_name?: string; assets?: { name: string; digest?: string; browser_download_url: string }[] };
+    const version = String(rel.tag_name ?? "").replace(/^v/, "");
+    if (!/^\d+\.\d+\.\d+$/.test(version) || !isNewer(version, app.getVersion())) return null;
+    const asset = (rel.assets ?? []).find(
+      (a) => /^Talkdedsec-Setup-[\d.]+\.exe$/.test(a.name) && /^sha256:[0-9a-f]{64}$/.test(a.digest ?? "") &&
+        a.browser_download_url.startsWith(`https://github.com/${REPO}/releases/download/`),
+    );
+    // The portable build has no installation to update; it gets the release page instead.
+    pendingUpdate = asset && !process.env.PORTABLE_EXECUTABLE_DIR ? { url: asset.browser_download_url, sha256: asset.digest!.slice(7), name: asset.name } : null;
+    return { version, url: `https://github.com/${REPO}/releases/tag/v${version}`, canInstall: !!pendingUpdate };
+  } catch {
+    return null;
+  }
+}
+
+async function installUpdate(): Promise<boolean> {
+  if (!pendingUpdate) return false;
+  try {
+    const res = await net.fetch(pendingUpdate.url);
+    if (!res.ok) return false;
+    const data = Buffer.from(await res.arrayBuffer());
+    // The installer is unsigned, so the digest GitHub recorded at upload is the integrity check.
+    if (createHash("sha256").update(data).digest("hex") !== pendingUpdate.sha256) return false;
+    const file = userFile(join("update", pendingUpdate.name));
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, data);
+    if (await shell.openPath(file)) return false;
+    app.quit();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function exportProfile(): Promise<boolean> {
+  const { filePath } = await dialog.showSaveDialog(win!, { defaultPath: "talkdedsec-profile.json", filters: [{ name: "JSON", extensions: ["json"] }] });
+  if (!filePath) return false;
+  await writeFile(filePath, JSON.stringify({ app: "talkdedsec", version: 1, tweaks: Object.keys(await readBackups()) }, null, 2), "utf8");
+  return true;
+}
+
+async function importProfile(): Promise<string[] | null> {
+  const { filePaths } = await dialog.showOpenDialog(win!, { properties: ["openFile"], filters: [{ name: "JSON", extensions: ["json"] }] });
+  if (!filePaths[0]) return null;
+  try {
+    const data = JSON.parse(await readFile(filePaths[0], "utf8")) as { app?: string; tweaks?: unknown };
+    if (data.app !== "talkdedsec" || !Array.isArray(data.tweaks)) return null;
+    // Only ids from our own catalog: the file decides which tweaks, never what they do.
+    return data.tweaks.map(String).filter((id) => BY_ID.has(id));
+  } catch {
+    return null;
+  }
+}
+
+let leftovers = new Map<string, Leftover>();
 let win: BrowserWindow | null = null;
 
 function createWindow() {
@@ -146,6 +226,24 @@ function registerIpc() {
   // No /f: an app with unsaved work can still hold the restart.
   ipcMain.handle("restartWindows", () => void spawn("shutdown.exe", ["/r", "/t", "5"], { detached: true, stdio: "ignore" }).unref());
   ipcMain.handle("openExternal", (_e, url: string) => (String(url).startsWith("https://") ? shell.openExternal(url) : undefined));
+  ipcMain.handle("startup:list", listStartup);
+  ipcMain.handle("startup:set", (_e, id: string, enabled: boolean) => setStartup(String(id), enabled === true));
+  ipcMain.handle("apps:list", listApps);
+  ipcMain.handle("apps:uninstall", async (_e, id: string) => {
+    if (!isAppId(String(id))) return { ok: false, error: "bad-id", leftovers: [] };
+    const result = await uninstallApp(String(id));
+    // The renderer only ever names leftovers by id; the paths stay here.
+    leftovers = new Map(result.leftovers.map((l) => [l.id, l]));
+    return result;
+  });
+  ipcMain.handle("apps:removeLeftovers", (_e, ids: string[]) =>
+    removeLeftovers(list(ids).map((id) => leftovers.get(String(id))).filter((l): l is Leftover => !!l), userFile("removed-keys")));
+  ipcMain.handle("history:list", async () => (await readJson<History>("history.json", { entries: [] })).entries);
+  ipcMain.handle("history:clear", () => writeJson("history.json", { entries: [] }));
+  ipcMain.handle("profile:export", exportProfile);
+  ipcMain.handle("profile:import", importProfile);
+  ipcMain.handle("update:check", async () => ((await readSettings()).checkUpdates ? checkUpdate() : null));
+  ipcMain.handle("update:install", installUpdate);
   ipcMain.on("window:minimize", () => win?.minimize());
   ipcMain.on("window:toggle-maximize", () => (win?.isMaximized() ? win.unmaximize() : win?.maximize()));
   ipcMain.on("window:close", () => win?.close());

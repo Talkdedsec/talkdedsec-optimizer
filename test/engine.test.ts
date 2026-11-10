@@ -71,3 +71,67 @@ test("apply then revert restores the registry", { skip: process.platform !== "wi
     await runPs(`Remove-Item '${path}' -Recurse -Force`);
   }
 });
+
+test("version compare, startup ids and leftover names", async () => {
+  const { appNames, isAppId, isNewer, leftoverCandidates, parseStartupId } = await import("../electron/tools.ts");
+  assert.equal(isNewer("1.0.10", "1.0.9"), true);
+  assert.equal(isNewer("v1.1.0", "1.1.0"), false);
+  assert.equal(isNewer("1.0.0", "1.2.0"), false);
+  assert.deepEqual(parseStartupId("HKCU|Run|My|App"), { root: "HKCU", sub: "Run", name: "My|App" });
+  assert.equal(parseStartupId("HKU|Run|x"), null);
+  assert.equal(isAppId("reg|HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{A}"), true);
+  assert.equal(isAppId("reg|HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"), false);
+  assert.equal(isAppId("appx|Foo.Bar_1.0.0.0_x64__abc; calc"), false);
+  assert.deepEqual(appNames("Foo Tool 2.4.1 (x64)"), ["Foo Tool 2.4.1 (x64)", "Foo Tool"]);
+  // names every vendor shares must never become a leftover target
+  assert.deepEqual(appNames("Microsoft"), []);
+  assert.deepEqual(appNames("Go"), []);
+  const env = { appData: "C:\\U\\AppData\\Roaming", localAppData: "C:\\U\\AppData\\Local", programData: "C:\\ProgramData", programFiles: "C:\\Program Files", programFilesX86: "" };
+  const paths = leftoverCandidates({ name: "Foo Tool 2.4", publisher: "Acme", location: "C:\\Program Files\\Foo Tool\\" }, env).map((c) => c.path);
+  assert.ok(paths.includes("C:\\Program Files\\Foo Tool"));
+  assert.ok(paths.includes("C:\\U\\AppData\\Roaming\\Acme\\Foo Tool"));
+  assert.ok(paths.includes("HKCU:\\Software\\Foo Tool"));
+  assert.ok(paths.every((p) => /\\Foo Tool( 2\.4)?$/.test(p)), "every candidate ends with the app's own name");
+  // an install location that is not named after the app (a shared folder) is left alone
+  assert.ok(!leftoverCandidates({ name: "Foo Tool", publisher: "", location: "C:\\Program Files" }, env).some((c) => c.path === "C:\\Program Files"));
+});
+
+test("startup switch round trip and leftover removal on real keys", async () => {
+  const { listStartup, measure, removeLeftovers, setStartup } = await import("../electron/tools.ts");
+  const { mkdtemp, mkdir, writeFile, access } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const name = "TalkdedsecSelfTest";
+  const run = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
+  const approved = "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run";
+  try {
+    await runPs(`Set-ItemProperty -LiteralPath '${run}' -Name '${name}' -Value 'cmd.exe /c rem' -Type String`);
+    const find = async () => (await listStartup()).find((i) => i.id === `HKCU|Run|${name}`);
+    assert.equal((await find())?.enabled, true);
+    assert.equal(await setStartup(`HKCU|Run|${name}`, false), true);
+    assert.equal((await find())?.enabled, false);
+    assert.equal(await setStartup(`HKCU|Run|${name}`, true), true);
+    assert.equal((await find())?.enabled, true);
+    assert.equal(await setStartup("HKU|Run|x", false), false);
+  } finally {
+    await runPs(`Remove-ItemProperty -LiteralPath '${run}' -Name '${name}' -ErrorAction SilentlyContinue; Remove-ItemProperty -LiteralPath '${approved}' -Name '${name}' -ErrorAction SilentlyContinue`);
+  }
+
+  const m = await measure();
+  assert.ok(m && m.freeRamMb > 0 && m.processes > 0 && m.services > 0);
+
+  const root = await mkdtemp(join(tmpdir(), "tlk-left-"));
+  const folder = join(root, "Left Over's");
+  await mkdir(folder);
+  await writeFile(join(folder, "a.txt"), "x");
+  const key = "HKCU:\\Software\\TalkdedsecSelfTestLeft";
+  await runPs(`New-Item -Path '${key}' -Force | Out-Null; Set-ItemProperty -LiteralPath '${key}' -Name 'v' -Value 1`);
+  const removed = await removeLeftovers(
+    [{ id: "0", kind: "folder", path: folder, sizeMb: 0 }, { id: "1", kind: "registry", path: key, sizeMb: 0 }, { id: "2", kind: "folder", path: join(root, "missing"), sizeMb: 0 }],
+    join(root, "backup"),
+  );
+  assert.equal(removed, 2);
+  await assert.rejects(access(folder));
+  assert.equal(await runJson<boolean>(`if (Test-Path -LiteralPath '${key}') { 'true' } else { 'false' }`), false);
+  assert.equal(await runJson<number>(`@(Get-ChildItem -LiteralPath '${join(root, "backup")}' -Filter *.reg).Count`), 1);
+});
