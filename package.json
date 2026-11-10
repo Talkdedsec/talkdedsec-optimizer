@@ -1,7 +1,7 @@
 {
   "name": "talkdedsec",
   "productName": "Talkdedsec",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Windows performance, privacy and cleanup tweaks with one-click undo. No account, no telemetry.",
   "author": "Talkdedsec",
   "license": "MIT",

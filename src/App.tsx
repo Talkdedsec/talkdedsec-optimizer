@@ -138,8 +138,9 @@ export default function App() {
     <div className="relative h-full w-full overflow-hidden bg-black">
       <Background className="pointer-events-none absolute inset-0" />
       <div className="drag-region fixed inset-x-0 top-0 z-40 h-[46px]" />
-      <WindowControls className="fixed right-0 top-0 z-50" />
       <AppProvider><Routes /></AppProvider>
+      {/* Must come last: a drag region later in the document would swallow the clicks on these buttons. */}
+      <WindowControls className="fixed right-0 top-0 z-50" />
     </div>
   );
 }
