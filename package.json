@@ -4,6 +4,14 @@
   "version": "1.0.0",
   "description": "Windows performance, privacy and cleanup tweaks with one-click undo. No account, no telemetry.",
   "author": "Talkdedsec",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Talkdedsec/talkdedsec-optimizer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Talkdedsec/talkdedsec-optimizer/issues"
+  },
   "homepage": "https://talkdedsec.com",
   "private": true,
   "main": "dist-electron/main.js",
@@ -47,11 +55,13 @@
     ],
     "win": {
       "target": "nsis",
-      "requestedExecutionLevel": "requireAdministrator"
+      "requestedExecutionLevel": "requireAdministrator",
+      "icon": "build/icon.png"
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "Talkdedsec-Setup-${version}.${ext}"
     },
     "extraMetadata": {
       "description": "Talkdedsec"
