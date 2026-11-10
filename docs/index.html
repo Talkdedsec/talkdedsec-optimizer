@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talkdedsec — Windows tuned, every change undoable</title>
+<meta name="description" content="114 Windows performance, privacy and cleanup tweaks picked for your hardware, each one undoable with a click. No account, no telemetry.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Talkdedsec — Windows tuned, every change undoable">
+<meta property="og:description" content="114 tweaks picked for your hardware. One click to apply, one click to undo. No account, no telemetry.">
+<meta property="og:image" content="https://talkdedsec.github.io/talkdedsec-optimizer/assets/og.png">
+<meta property="og:url" content="https://talkdedsec.github.io/talkdedsec-optimizer/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="assets/icon.png">
+<style>
+:root{
+  --bg:#000; --fg:#fff; --dim:rgba(255,255,255,.56); --faint:rgba(255,255,255,.34);
+  --line:rgba(255,255,255,.1); --glass:rgba(255,255,255,.045); --ease:cubic-bezier(.2,.8,.2,1);
+  --font:"Segoe UI Variable Display","Segoe UI Variable",-apple-system,BlinkMacSystemFont,"SF Pro Display","Inter","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Code","SF Mono",Consolas,monospace;
+  --pad:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);letter-spacing:-.011em;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+::selection{background:#fff;color:#000}
+:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:6px}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.veil{position:fixed;inset:0;z-index:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.55) 60%,#000)}
+main,header,footer{position:relative;z-index:1}
+.wrap{max-width:1280px;margin:0 auto;padding:0 var(--pad)}
+
+/* header */
+header{position:fixed;top:0;left:0;right:0;z-index:20;transition:background .4s var(--ease),border-color .4s var(--ease);border-bottom:1px solid transparent}
+header.stuck{background:rgba(0,0,0,.55);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);border-color:var(--line)}
+.bar{display:flex;align-items:center;gap:28px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.02em}
+.brand img{width:30px;height:30px;border-radius:10px;background:#fff}
+.links{display:flex;gap:26px;margin-left:auto;font-size:13.5px;color:var(--dim)}
+.links a{transition:color .2s}.links a:hover{color:#fff}
+.lang{display:flex;padding:3px;border:1px solid var(--line);border-radius:999px;background:var(--glass)}
+.lang button{all:unset;cursor:pointer;font-size:11.5px;font-weight:600;letter-spacing:.06em;padding:5px 11px;border-radius:999px;color:var(--dim);transition:all .25s var(--ease)}
+.lang button[aria-pressed=true]{background:#fff;color:#000}
+.lang button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:10px;height:52px;padding:0 26px;border-radius:999px;font-size:15px;font-weight:600;letter-spacing:-.01em;transition:transform .35s var(--ease),background .25s,box-shadow .35s var(--ease),border-color .25s;white-space:nowrap}
+.btn svg{width:17px;height:17px;flex:none}
+.btn.solid{background:#fff;color:#000;box-shadow:0 10px 40px -12px rgba(255,255,255,.55)}
+.btn.solid:hover{transform:translateY(-2px);box-shadow:0 18px 50px -12px rgba(255,255,255,.7)}
+.btn.line{border:1px solid rgba(255,255,255,.18);background:var(--glass);backdrop-filter:blur(12px)}
+.btn.line:hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.09)}
+.btn.small{height:38px;padding:0 16px;font-size:13px}
+
+/* hero */
+.hero{padding:clamp(150px,22vh,230px) 0 0;text-align:center}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);border:1px solid var(--line);background:var(--glass);padding:8px 14px;border-radius:999px;backdrop-filter:blur(12px)}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 12px #fff;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+h1{font-size:clamp(46px,9.4vw,148px);line-height:.93;letter-spacing:-.055em;font-weight:650;margin:34px auto 0;max-width:13ch}
+h1 .ln{display:block;overflow:hidden;padding-bottom:.08em}
+h1 .ln span{display:block;transform:translateY(105%);animation:rise 1.1s var(--ease) forwards}
+h1 .ln:nth-child(2) span{animation-delay:.12s;color:transparent;-webkit-text-stroke:1.2px rgba(255,255,255,.75)}
+@keyframes rise{to{transform:none}}
+.lede{max-width:600px;margin:34px auto 0;font-size:clamp(16px,1.5vw,19px);color:var(--dim);line-height:1.6}
+.cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+.note{margin-top:18px;font-size:12.5px;color:var(--faint)}
+.stage{perspective:1800px;margin:clamp(60px,9vh,110px) auto 0;max-width:1180px;padding:0 var(--pad)}
+.shot{border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);background:#000;box-shadow:0 60px 160px -40px rgba(255,255,255,.22),0 0 0 1px rgba(0,0,0,.6);transform-origin:50% 0;will-change:transform}
+.shot img{width:100%;height:auto}
+
+/* sections */
+section{padding:clamp(90px,14vh,170px) 0}
+.kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+h2{font-size:clamp(34px,5.4vw,76px);line-height:1;letter-spacing:-.045em;font-weight:650;margin-top:18px;max-width:16ch}
+h2 em{font-style:normal;color:var(--faint)}
+.sub{margin-top:22px;max-width:560px;color:var(--dim);font-size:17px;line-height:1.6}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:calc(var(--i,0)*70ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:clamp(70px,10vh,120px)}
+.stat{padding:38px 26px;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0}
+.stat b{display:block;font-size:clamp(44px,6vw,84px);line-height:1;letter-spacing:-.05em;font-weight:650;font-variant-numeric:tabular-nums}
+.stat span{display:block;margin-top:12px;font-size:13.5px;color:var(--dim)}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:64px}
+.card{position:relative;grid-column:span 2;padding:30px;border-radius:26px;border:1px solid var(--line);background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);overflow:hidden;min-height:250px;display:flex;flex-direction:column;transition:border-color .4s,transform .6s var(--ease)}
+.card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px circle at var(--mx,50%) var(--my,-20%),rgba(255,255,255,.13),transparent 60%);opacity:0;transition:opacity .4s;pointer-events:none}
+.card:hover{border-color:rgba(255,255,255,.26)}
+.card:hover::before{opacity:1}
+.card.wide{grid-column:span 3}
+.card.invert{background:#fff;color:#000;border-color:#fff}
+.card.invert p{color:rgba(0,0,0,.6)}
+.card.invert .ico{border-color:rgba(0,0,0,.12);background:rgba(0,0,0,.05)}
+.ico{width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);display:grid;place-items:center}
+.ico svg{width:20px;height:20px}
+.card h3{margin-top:auto;padding-top:34px;font-size:22px;letter-spacing:-.03em;font-weight:620;line-height:1.15}
+.card p{margin-top:10px;color:var(--dim);font-size:14.5px;line-height:1.55}
+.card code{font-family:var(--mono);font-size:12.5px;opacity:.8}
+
+/* steps */
+.step{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(30px,6vw,90px);align-items:center;padding:clamp(40px,7vh,80px) 0;border-top:1px solid var(--line)}
+.step:nth-of-type(even) .txt{order:2}
+.step .num{font-family:var(--mono);font-size:12px;letter-spacing:.16em;color:var(--faint)}
+.step h3{font-size:clamp(28px,3.4vw,46px);letter-spacing:-.04em;line-height:1.05;font-weight:640;margin-top:16px}
+.step p{margin-top:16px;color:var(--dim);font-size:16.5px;line-height:1.6;max-width:44ch}
+.step .shot{box-shadow:0 40px 120px -50px rgba(255,255,255,.25)}
+.term{font-family:var(--mono);font-size:13px;line-height:1.9;padding:26px 28px;border-radius:18px;border:1px solid var(--line);background:rgba(0,0,0,.6);backdrop-filter:blur(18px);color:var(--dim);overflow-x:auto;white-space:pre}
+.term b{color:#fff;font-weight:500}
+
+/* catalog */
+.cats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:60px;border-top:1px solid var(--line)}
+.cat{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:22px 6px;border-bottom:1px solid var(--line);font-size:clamp(20px,2.3vw,30px);letter-spacing:-.035em;font-weight:560;color:var(--dim);transition:color .3s,padding .5s var(--ease)}
+.cat:hover{color:#fff;padding-left:18px}
+.cat i{font-style:normal;font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--faint)}
+.cats .cat:not(:nth-child(3n)){margin-right:34px}
+
+/* marquee */
+.marq{overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0;white-space:nowrap}
+.marq div{display:inline-block;animation:slide 38s linear infinite;font-size:clamp(26px,4vw,54px);letter-spacing:-.04em;font-weight:620;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.4)}
+.marq span{margin:0 .55em}.marq span:nth-child(even){color:#fff;-webkit-text-stroke:0}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+/* safety */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,90px);align-items:start}
+.list{list-style:none;padding:0;margin-top:8px}
+.list li{display:flex;gap:16px;padding:22px 0;border-bottom:1px solid var(--line);font-size:16.5px;color:var(--dim);line-height:1.5}
+.list li:first-child{border-top:1px solid var(--line)}
+.list li b{color:#fff;font-weight:600}
+.list svg{width:20px;height:20px;flex:none;margin-top:2px;color:#fff}
+details{border-bottom:1px solid var(--line)}
+details:first-of-type{border-top:1px solid var(--line)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px 0;font-size:19px;letter-spacing:-.025em;font-weight:560}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-family:var(--mono);font-weight:300;font-size:22px;color:var(--faint);transition:transform .4s var(--ease)}
+details[open] summary::after{transform:rotate(45deg)}
+details p{padding:0 0 26px;color:var(--dim);max-width:62ch;font-size:15.5px;line-height:1.65}
+
+/* final */
+.final{text-align:center;padding-bottom:clamp(90px,14vh,160px)}
+.final img{width:92px;height:92px;border-radius:28px;background:#fff;margin:0 auto;box-shadow:0 30px 90px -20px rgba(255,255,255,.45);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(-3deg)}}
+.final h2{margin:40px auto 0;max-width:14ch;font-size:clamp(40px,7.4vw,112px)}
+footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(--faint)}
+.foot{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:center}
+.foot a{color:var(--dim);transition:color .2s}.foot a:hover{color:#fff}
+.foot .sp{margin-left:auto}
+
+@media (max-width:920px){
+  .links{display:none}.lang{margin-left:auto}
+  .stats{grid-template-columns:1fr 1fr}.stat:nth-child(3){border-left:0}.stat:nth-child(n+3){border-top:1px solid var(--line)}
+  .card,.card.wide{grid-column:span 6;min-height:0}
+  .step{grid-template-columns:1fr}.step:nth-of-type(even) .txt{order:0}
+  .cats{grid-template-columns:1fr 1fr}.cats .cat{margin-right:0!important}.cats .cat:nth-child(odd){margin-right:24px!important}
+  .two{grid-template-columns:1fr}
+  .foot .sp{margin-left:0}
+}
+@media (max-width:520px){
+  .bar{gap:12px}.bar .btn.small{display:none}
+  .cats{grid-template-columns:1fr}.cats .cat{margin-right:0!important}
+  .btn{height:50px;padding:0 22px}
+  .stat{padding:28px 16px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  h1 .ln span{transform:none}.reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<div class="veil" aria-hidden="true"></div>
+
+<header id="top">
+  <div class="wrap bar">
+    <a class="brand" href="#"><img src="assets/icon.png" alt="" width="30" height="30">Talkdedsec</a>
+    <nav class="links" aria-label="Sections">
+      <a href="#features" data-t="nav1">Features</a>
+      <a href="#how" data-t="nav2">How it works</a>
+      <a href="#catalog" data-t="nav3">Catalog</a>
+      <a href="#safety" data-t="nav4">Safety</a>
+    </nav>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="tr" aria-pressed="false">TR</button>
+    </div>
+    <a class="btn line small" href="https://github.com/Talkdedsec/talkdedsec-optimizer">GitHub</a>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="wrap">
+      <span class="eyebrow"><i></i><span data-t="eyebrow">Windows 10 &amp; 11 · free · open source</span></span>
+      <h1><span class="ln"><span data-t="h1a">Windows, tuned.</span></span><span class="ln"><span data-t="h1b">Nothing final.</span></span></h1>
+      <p class="lede" data-t="lede">114 performance, privacy and cleanup tweaks, picked for the hardware you actually have. Every one of them remembers what was there before, so undo is a single click.</p>
+      <div class="cta">
+        <a class="btn solid" href="https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>
+          <span data-t="dl">Download for Windows</span>
+        </a>
+        <a class="btn line" href="https://github.com/Talkdedsec/talkdedsec-optimizer"><span data-t="src">Read the source</span></a>
+      </div>
+      <p class="note" data-t="note">No account. No telemetry. Nothing leaves your PC.</p>
+    </div>
+    <div class="stage"><div class="shot" id="heroShot"><img src="assets/overview.png" width="1240" height="820" alt="Talkdedsec overview: hardware summary, quick actions and health score" data-alt="altOverview"></div></div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat reveal"><b data-count="114">114</b><span data-t="s1">tweaks in the catalog</span></div>
+      <div class="stat reveal" style="--i:1"><b data-count="102">102</b><span data-t="s2">fully reversible</span></div>
+      <div class="stat reveal" style="--i:2"><b data-count="12">12</b><span data-t="s3">categories</span></div>
+      <div class="stat reveal" style="--i:3"><b data-count="0">0</b><span data-t="s4">bytes sent anywhere</span></div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <p class="kicker reveal" data-t="k1">What it does</p>
+      <h2 class="reveal" data-t="f0">An optimizer that <em>shows its work.</em></h2>
+      <div class="bento">
+        <article class="card wide invert reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg></div>
+          <h3 data-t="f1h">Undo that actually restores.</h3>
+          <p data-t="f1p">Before a value is written, the old one is saved with its real registry type, and each service keeps its previous start mode. Reverting puts back exactly what you had, including your own custom values.</p>
+        </article>
+        <article class="card wide reveal" style="--i:1">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M9 1v4m6-4v4M9 19v4m6-4v4M1 9h4m-4 6h4m14-6h4m-4 6h4"/></svg></div>
+          <h3 data-t="f2h">Picked for this PC.</h3>
+          <p data-t="f2p">A read-only scan looks at CPU, GPU, memory, drive type, power plan and whether it is a laptop. Tweaks that would cost battery or need hardware you do not have are skipped, with the reason shown.</p>
+        </article>
+        <article class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3 data-t="f3h">No account. No telemetry.</h3>
+          <p data-t="f3p">There is no sign-in and no network code for your data. The app opens and works offline.</p>
+        </article>
+        <article class="card reveal" style="--i:1">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3 data-t="f4h">Restore point first.</h3>
+          <p data-t="f4p">Optionally creates a Windows restore point before anything is applied, as a second safety net.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
+          <h3 data-t="f5h">Memory and deep clean.</h3>
+          <p data-t="f5p">Release unused working sets and the standby cache, or clear temp files and update leftovers in one pass.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <div class="marq" aria-hidden="true"><div id="marq"></div></div>
+
+  <section id="how">
+    <div class="wrap">
+      <p class="kicker reveal" data-t="k2">How it works</p>
+      <h2 class="reveal" data-t="h0">Scan. Apply. <em>Change your mind.</em></h2>
+      <div style="margin-top:64px">
+        <div class="step">
+          <div class="txt reveal"><span class="num">01</span><h3 data-t="st1h">Scan the machine</h3><p data-t="st1p">One read-only pass over your hardware and Windows settings. You get a score, a list of findings and the tweaks that match this configuration.</p></div>
+          <div class="shot reveal" style="--i:1"><img loading="lazy" src="assets/scan.png" width="1240" height="820" alt="Scan page with score, hardware details and recommended tweaks" data-alt="altScan"></div>
+        </div>
+        <div class="step">
+          <div class="txt reveal"><span class="num">02</span><h3 data-t="st2h">Apply what you want</h3><p data-t="st2p">Take the recommended set in one click, or flip individual switches in the catalog. Each tweak says how risky it is and whether it needs a restart. Risky ones ask twice.</p></div>
+          <div class="shot reveal" style="--i:1"><img loading="lazy" src="assets/catalog.png" width="1240" height="820" alt="Tweak catalog with per-tweak switches, risk and restart badges" data-alt="altCatalog"></div>
+        </div>
+        <div class="step">
+          <div class="txt reveal"><span class="num">03</span><h3 data-t="st3h">Undo any of it</h3><p data-t="st3p">Switch a tweak off and the saved value goes back. If a tweak fails halfway, the part that was written is rolled back on the spot.</p></div>
+          <div class="term reveal" style="--i:1"><b>apply</b>   perf.menu-show-delay
+        MenuShowDelay   <b>50 → 0</b>      saved: String "50"
+<b>apply</b>   net.disable-llmnr
+        EnableMulticast   <b>absent → 0</b>   saved: absent
+<b>revert</b>  perf.menu-show-delay
+        MenuShowDelay   <b>0 → 50</b>      restored
+<b>revert</b>  net.disable-llmnr
+        EnableMulticast   <b>0 → absent</b>   removed</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="catalog" style="padding-top:0">
+    <div class="wrap">
+      <p class="kicker reveal" data-t="k3">The catalog</p>
+      <h2 class="reveal" data-t="c0">114 tweaks, <em>twelve shelves.</em></h2>
+      <p class="sub reveal" data-t="c1">Every entry is plain data: registry values, service start modes or a short PowerShell step. You can read all of them in one JSON file.</p>
+      <div class="cats" id="cats"></div>
+    </div>
+  </section>
+
+  <section id="safety" style="padding-top:0">
+    <div class="wrap two">
+      <div>
+        <p class="kicker reveal" data-t="k4">Safety</p>
+        <h2 class="reveal" data-t="sf0">What it <em>will not</em> do.</h2>
+        <p class="sub reveal" data-t="sf1">Tuning tools earn a bad name by being careless. These are the lines this one does not cross.</p>
+      </div>
+      <ul class="list">
+        <li class="reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-t="n1"><b>No silent failures.</b> Without administrator rights, system-wide tweaks are refused with a clear message instead of half-applied.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-t="n2"><b>No surprise recommendations.</b> Advanced or irreversible tweaks are never suggested automatically.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-t="n3"><b>No Recycle Bin or Prefetch wipe.</b> Deep clean only removes temp files, caches and update leftovers.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-t="n4"><b>No forced restart.</b> A restart is only offered, and it never force-closes your open apps.</span></li>
+        <li class="reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg><span data-t="n5"><b>No lost backups.</b> The first saved value is kept even if you apply the same tweak again.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <p class="kicker reveal" data-t="k5">Questions</p>
+      <h2 class="reveal" style="margin-bottom:54px" data-t="q0">Before you <em>install.</em></h2>
+      <details class="reveal"><summary data-t="q1">Windows shows a SmartScreen warning. Why?</summary><p data-t="a1">The installer is not code-signed yet, so Windows does not recognise the publisher. Choose "More info", then "Run anyway". The full source is public and you can build the same installer yourself with one command.</p></details>
+      <details class="reveal"><summary data-t="q2">Why does it ask for administrator rights?</summary><p data-t="a2">Most tweaks write under HKEY_LOCAL_MACHINE or change services, which Windows only allows for administrators. Tweaks that only touch your own user settings work without it.</p></details>
+      <details class="reveal"><summary data-t="q3">Is every tweak reversible?</summary><p data-t="a3">102 of 114 restore the exact previous value. A few PowerShell-based ones, such as the power plan and DNS, go back to the Windows default instead of a custom setting you had. Tweaks that cannot be undone are labelled and never recommended automatically.</p></details>
+      <details class="reveal"><summary data-t="q4">Where are my backups kept?</summary><p data-t="a4">In a small JSON file in the app's data folder under your user profile. Nothing is uploaded.</p></details>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <img class="reveal" src="assets/icon.png" width="92" height="92" alt="">
+      <h2 class="reveal" data-t="e0">Try it. <em>Take it back.</em></h2>
+      <div class="cta reveal">
+        <a class="btn solid" href="https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 21h16"/></svg>
+          <span data-t="dl">Download for Windows</span>
+        </a>
+        <a class="btn line" href="https://github.com/Talkdedsec/talkdedsec-optimizer"><span data-t="star">Star on GitHub</span></a>
+      </div>
+      <p class="note" data-t="req">Windows 10 or 11, 64-bit · MIT licence</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 Talkdedsec</span>
+    <a href="https://talkdedsec.com">talkdedsec.com</a>
+    <a href="https://github.com/Talkdedsec/talkdedsec-optimizer">GitHub</a>
+    <a href="https://github.com/Talkdedsec/talkdedsec-optimizer/blob/main/LICENSE" data-t="lic">Licence</a>
+    <a href="https://github.com/Talkdedsec/talkdedsec-optimizer/blob/main/SECURITY.md" data-t="sec">Security</a>
+    <a class="sp" href="#top" data-t="up">Back to top ↑</a>
+  </div>
+</footer>
+
+<script>
+const TR = {
+  nav1:"Özellikler", nav2:"Nasıl çalışır", nav3:"Katalog", nav4:"Güvenlik",
+  eyebrow:"Windows 10 ve 11 · ücretsiz · açık kaynak",
+  h1a:"Windows, ayarlı.", h1b:"Kalıcı değil.",
+  lede:"Gerçekten sahip olduğun donanıma göre seçilen 114 performans, gizlilik ve temizlik ayarı. Her biri önceki değeri saklar; geri almak tek tık.",
+  dl:"Windows için indir", src:"Kaynağı oku", note:"Hesap yok. Telemetri yok. Bilgisayarından hiçbir şey çıkmaz.",
+  s1:"katalogdaki ayar", s2:"tamamen geri alınabilir", s3:"kategori", s4:"dışarı giden bayt",
+  k1:"Ne yapar", f0:"İşini <em>gösteren</em> bir optimizasyon aracı.",
+  f1h:"Gerçekten geri yükleyen geri alma.", f1p:"Bir değer yazılmadan önce eskisi gerçek kayıt türüyle saklanır, her servis önceki başlangıç modunu korur. Geri alınca tam olarak eskisi döner; kendi özel değerlerin de.",
+  f2h:"Bu bilgisayara göre seçilir.", f2p:"Salt okunur tarama işlemciye, ekran kartına, belleğe, disk türüne, güç planına ve cihazın dizüstü olup olmadığına bakar. Pili tüketecek ya da sende olmayan donanımı gerektiren ayarlar nedeni gösterilerek atlanır.",
+  f3h:"Hesap yok. Telemetri yok.", f3p:"Giriş ekranı yok, verini gönderen ağ kodu yok. Uygulama açılır ve çevrimdışı çalışır.",
+  f4h:"Önce geri yükleme noktası.", f4p:"İstersen herhangi bir şey uygulanmadan önce Windows geri yükleme noktası oluşturur; ikinci bir güvenlik ağı.",
+  f5h:"Bellek ve derin temizlik.", f5p:"Kullanılmayan belleği ve bekleme önbelleğini boşalt ya da geçici dosyaları ve güncelleme artıklarını tek seferde temizle.",
+  k2:"Nasıl çalışır", h0:"Tara. Uygula. <em>Fikrini değiştir.</em>",
+  st1h:"Bilgisayarı tara", st1p:"Donanımın ve Windows ayarların üzerinde tek bir salt okunur geçiş. Bir puan, bulgular listesi ve bu yapılandırmaya uyan ayarlar gelir.",
+  st2h:"İstediğini uygula", st2p:"Önerilen seti tek tıkla al ya da katalogda tek tek aç. Her ayar ne kadar riskli olduğunu ve yeniden başlatma isteyip istemediğini söyler. Riskli olanlar iki kez sorar.",
+  st3h:"Hepsini geri al", st3p:"Bir ayarı kapattığında saklanan değer geri yazılır. Bir ayar yarıda başarısız olursa yazılan kısmı o anda geri alınır.",
+  k3:"Katalog", c0:"114 ayar, <em>on iki raf.</em>", c1:"Her kayıt düz veridir: kayıt defteri değerleri, servis başlangıç modları ya da kısa bir PowerShell adımı. Hepsini tek bir JSON dosyasında okuyabilirsin.",
+  k4:"Güvenlik", sf0:"<em>Yapmayacağı</em> şeyler.", sf1:"Optimizasyon araçları kötü ününü özensizlikle kazanır. Bu aracın geçmediği çizgiler şunlar.",
+  n1:"<b>Sessiz hata yok.</b> Yönetici yetkisi yoksa sistem geneli ayarlar yarım uygulanmaz, açık bir mesajla reddedilir.",
+  n2:"<b>Sürpriz öneri yok.</b> İleri düzey ya da geri alınamayan ayarlar asla otomatik önerilmez.",
+  n3:"<b>Geri Dönüşüm Kutusu ve Prefetch silinmez.</b> Derin temizlik yalnızca geçici dosyaları, önbellekleri ve güncelleme artıklarını kaldırır.",
+  n4:"<b>Zorla yeniden başlatma yok.</b> Yeniden başlatma yalnızca önerilir ve açık uygulamalarını zorla kapatmaz.",
+  n5:"<b>Yedek kaybolmaz.</b> Aynı ayarı yeniden uygulasan bile ilk saklanan değer korunur.",
+  k5:"Sorular", q0:"<em>Kurmadan</em> önce.",
+  q1:"Windows SmartScreen uyarısı gösteriyor. Neden?", a1:"Kurulum dosyası henüz kod imzalı değil, bu yüzden Windows yayıncıyı tanımıyor. \"Ek bilgi\"ye, sonra \"Yine de çalıştır\"a bas. Kaynak kodun tamamı açık; aynı kurulum dosyasını tek komutla kendin de derleyebilirsin.",
+  q2:"Neden yönetici yetkisi istiyor?", a2:"Ayarların çoğu HKEY_LOCAL_MACHINE altına yazar ya da servisleri değiştirir; Windows buna yalnızca yöneticilere izin verir. Yalnızca kendi kullanıcı ayarlarına dokunanlar yetkisiz de çalışır.",
+  q3:"Her ayar geri alınabilir mi?", a3:"114 ayarın 102'si tam önceki değeri geri yükler. Güç planı ve DNS gibi birkaç PowerShell tabanlı ayar, senin özel ayarına değil Windows varsayılanına döner. Geri alınamayanlar etiketlidir ve asla otomatik önerilmez.",
+  q4:"Yedeklerim nerede duruyor?", a4:"Kullanıcı profilindeki uygulama veri klasöründe küçük bir JSON dosyasında. Hiçbir şey yüklenmez.",
+  e0:"Dene. <em>Geri al.</em>", star:"GitHub'da yıldızla", req:"Windows 10 veya 11, 64 bit · MIT lisansı",
+  lic:"Lisans", sec:"Güvenlik", up:"Başa dön ↑",
+  altOverview:"Talkdedsec genel bakış: donanım özeti, hızlı işlemler ve sağlık puanı",
+  altScan:"Puan, donanım ayrıntıları ve önerilen ayarların olduğu tarama sayfası",
+  altCatalog:"Ayar başına anahtar, risk ve yeniden başlatma etiketleriyle ayar kataloğu"
+};
+const CATS = [["Performance","Performans",9],["Gaming","Oyun",8],["Memory","Bellek",3],["Power","Güç",8],["Services","Servisler",28],["Network","Ağ",9],["Privacy","Gizlilik",15],["Visual","Görsel",5],["Display","Ekran",5],["Input","Giriş",5],["Storage","Depolama",8],["Maintenance","Bakım",11]];
+const $ = (s, r = document) => [...r.querySelectorAll(s)];
+const EN = {};
+$("[data-t]").forEach(el => EN[el.dataset.t] = el.innerHTML);
+$("[data-alt]").forEach(el => EN[el.dataset.alt] = el.alt);
+
+function setLang(lang) {
+  const d = lang === "tr" ? TR : EN;
+  document.documentElement.lang = lang;
+  $("[data-t]").forEach(el => { el.innerHTML = d[el.dataset.t] ?? EN[el.dataset.t]; });
+  $("[data-alt]").forEach(el => { el.alt = d[el.dataset.alt] ?? EN[el.dataset.alt]; });
+  $("[data-lang]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  const i = lang === "tr" ? 1 : 0;
+  document.getElementById("cats").innerHTML = CATS.map(c => `<div class="cat"><span>${c[i]}</span><i>${String(c[2]).padStart(2, "0")}</i></div>`).join("");
+  const run = CATS.map(c => `<span>${c[i]}</span>`).join("");
+  document.getElementById("marq").innerHTML = run + run;
+  try { localStorage.setItem("lang", lang); } catch {}
+}
+let saved = null;
+try { saved = localStorage.getItem("lang"); } catch {}
+setLang(saved || ((navigator.language || "").toLowerCase().startsWith("tr") ? "tr" : "en"));
+$("[data-lang]").forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// reveal + count-up
+const io = new IntersectionObserver(entries => entries.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("in");
+  io.unobserve(e.target);
+  const b = e.target.querySelector("[data-count]");
+  if (b && !still) {
+    const to = +b.dataset.count, t0 = performance.now();
+    const tick = now => { const k = Math.min(1, (now - t0) / 1400); b.textContent = Math.round(to * (1 - Math.pow(1 - k, 4))); if (k < 1) requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+  }
+}), { threshold: 0.15 });
+$(".reveal").forEach(el => io.observe(el));
+
+// header state + hero screenshot flattening as it scrolls into view
+const head = document.querySelector("header"), shot = document.getElementById("heroShot");
+function onScroll() {
+  head.classList.toggle("stuck", scrollY > 24);
+  if (still) return;
+  const k = Math.max(0, Math.min(1, 1 - scrollY / (innerHeight * 0.7)));
+  shot.style.transform = `rotateX(${(k * 16).toFixed(2)}deg) scale(${(1 - k * 0.06).toFixed(3)})`;
+}
+addEventListener("scroll", onScroll, { passive: true });
+onScroll();
+
+// pointer spotlight on cards
+$(".card").forEach(c => c.addEventListener("pointermove", e => {
+  const r = c.getBoundingClientRect();
+  c.style.setProperty("--mx", e.clientX - r.left + "px");
+  c.style.setProperty("--my", e.clientY - r.top + "px");
+}));
+
+// background: slow monochrome ribbons with grain, one full-screen triangle
+(() => {
+  const canvas = document.getElementById("bg");
+  const gl = canvas.getContext("webgl", { antialias: false });
+  if (!gl) return;
+  const FS = `precision highp float;uniform vec2 r;uniform float t;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1.0,0.0)),f.x),mix(hash(i+vec2(0.0,1.0)),hash(i+vec2(1.0,1.0)),f.x),f.y);}
+float fbm(vec2 p){float v=0.0,a=0.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.03+vec2(1.7,9.2);a*=0.5;}return v;}
+void main(){vec2 uv=gl_FragCoord.xy/r;vec2 p=(gl_FragCoord.xy-0.5*r)/min(r.x,r.y)*0.9;
+p+=0.316*vec2(sin(t*0.31),cos(t*0.23));
+vec2 w=vec2(fbm(p+3.1),fbm(p+vec2(5.2,1.3)));
+float n=fbm(p*0.8+2.4*w+t*0.03);
+float v=smoothstep(0.42,1.0,0.5+0.5*sin(n*14.0));
+float lum=0.36*v;
+lum*=1.0-0.61*smoothstep(0.35,1.0,length(uv-0.5)*1.41421356);
+lum+=(hash(gl_FragCoord.xy+7.0)-0.5)*(0.02+1.3*lum);
+gl_FragColor=vec4(vec3(clamp(lum,0.0,1.0)),1.0);}`;
+  const prog = gl.createProgram();
+  [[gl.VERTEX_SHADER, "attribute vec2 a;void main(){gl_Position=vec4(a,0.0,1.0);}"], [gl.FRAGMENT_SHADER, FS]].forEach(([type, src]) => {
+    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); gl.attachShader(prog, s);
+  });
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+  gl.useProgram(prog);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+  const a = gl.getAttribLocation(prog, "a");
+  gl.enableVertexAttribArray(a);
+  gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
+  const uR = gl.getUniformLocation(prog, "r"), uT = gl.getUniformLocation(prog, "t");
+  function size() {
+    const d = Math.min(devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(innerWidth * d); canvas.height = Math.round(innerHeight * d);
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uR, canvas.width, canvas.height);
+  }
+  let last = 0;
+  function frame(now) {
+    if (!still) requestAnimationFrame(frame);
+    if (document.hidden || now - last < 33) return; // ~30 fps is plenty for slow smoke
+    last = now;
+    gl.uniform1f(uT, now / 1000 * 0.594);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  addEventListener("resize", () => { size(); if (still) { last = 0; frame(40); } });
+  size();
+  if (still) frame(40); else requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
