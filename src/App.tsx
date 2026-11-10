@@ -1,5 +1,6 @@
 import { Gauge, type LucideIcon, Settings2, ShieldAlert, ShieldCheck, SlidersHorizontal, Sparkles } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
+import logo from "./assets/logo.png";
 import { Background } from "./Background.tsx";
 import { Dashboard, Optimize, Preferences, Scan } from "./pages.tsx";
 import { AppProvider, useApp } from "./state.tsx";
@@ -50,12 +51,14 @@ function WindowControls({ className }: { className?: string }) {
 
 export function LogoMark({ size = 28 }: { size?: number }) {
   return (
-    <div
-      className="grid shrink-0 place-items-center border border-white/15 bg-white/[0.06] font-bold leading-none"
-      style={{ width: size, height: size, borderRadius: Math.round(size * 0.34), fontSize: Math.round(size * 0.5) }}
-    >
-      T
-    </div>
+    // The mark is black ink on alpha, so it sits on a white tile.
+    <img
+      src={logo}
+      alt=""
+      draggable={false}
+      className="shrink-0 bg-white object-contain p-[2px]"
+      style={{ width: size, height: size, borderRadius: Math.round(size * 0.34) }}
+    />
   );
 }
 
@@ -97,7 +100,7 @@ function Shell({ route, onRoute, children }: { route: Route; onRoute: (r: Route)
             </div>
           )}
           <div className="glass-soft flex items-center gap-2.5 px-3 py-2.5">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-white/[0.08] text-[13px] font-semibold leading-none text-white/70 ring-1 ring-inset ring-white/10">T</span>
+            <LogoMark size={32} />
             <div className="min-w-0 flex-1">
               <div className="truncate text-[12px] font-medium leading-tight">Talkdedsec</div>
               <div className="mt-0.5 flex items-center gap-1 text-[10px] text-white/40">
