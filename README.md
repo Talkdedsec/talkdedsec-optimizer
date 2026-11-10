@@ -26,19 +26,34 @@ each one undoable with a click. No account, no telemetry.
 - **Recommends only what fits.** Tweaks that cost battery or need hardware you do not have are skipped, with the reason shown.
 - **Saves before it writes.** Each registry value is stored with its real type and each service with its start mode.
 - **Undoes exactly.** Reverting restores the saved value, or removes the value if it did not exist before.
-- **Stays on your PC.** No sign-in, no telemetry, no network code for your data.
+- **Manages what starts with Windows.** Switch startup entries off and on, the same way Task Manager does.
+- **Uninstalls and cleans up.** Removes programs and Windows apps, then shows the folders and registry keys left behind.
+- **Keeps a history.** Every apply and revert is logged with free memory, process and service counts before and after.
+- **Stays on your PC.** No sign-in, no telemetry. The only network request is an update check you can turn off.
 
 | For this PC | Tweak catalog |
 |---|---|
 | <img src="docs/assets/scan.png" alt="Scan page with score and recommended tweaks"> | <img src="docs/assets/catalog.png" alt="Catalog with per-tweak switches and risk badges"> |
 
+<p align="center"><img src="docs/assets/history.png" width="720" alt="History of changes with before and after numbers"><br><sub>History</sub></p>
+
 ## Install
 
-1. Download `Talkdedsec-Setup-1.0.1.exe` from the [latest release](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest).
+1. Download `Talkdedsec-Setup-1.1.0.exe` from the [latest release](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest). Prefer no installation? Take `Talkdedsec-Portable-1.1.0.exe` instead.
 2. Run it. The installer is not code-signed yet, so SmartScreen may ask: choose **More info > Run anyway**.
 3. Start Talkdedsec. It asks for administrator rights because most tweaks write under `HKEY_LOCAL_MACHINE` or change services.
 
 Requires Windows 10 or 11, 64-bit.
+
+With [Scoop](https://scoop.sh):
+
+```bash
+scoop bucket add tlk https://github.com/Talkdedsec/scoop-tlk
+```
+
+```bash
+scoop install talkdedsec
+```
 
 ## Use
 
@@ -47,7 +62,8 @@ Requires Windows 10 or 11, 64-bit.
 | **Overview** | See your hardware and health score, run one-click optimize, free memory, deep clean, create a restore point. |
 | **For this PC** | Scan, then apply the recommended set or only the safe ones. |
 | **Tweak catalog** | Search all 114 tweaks, switch each one on or off, see risk and restart badges. |
-| **Preferences** | Language (English, Turkish), restore point before applying, revert everything. |
+| **Tools** | Startup entries, installed apps with leftover cleanup, history of changes with before/after numbers. |
+| **Preferences** | Language (English, Turkish), restore point before applying, update check, export or import a tweak set, revert everything. |
 
 Switching a tweak off restores what was there before. Risky tweaks ask for a second confirmation.
 
@@ -73,6 +89,8 @@ Every entry is plain data in [`shared/tweaks.json`](shared/tweaks.json): a regis
 - Advanced or irreversible tweaks are never recommended automatically.
 - Deep clean leaves the Recycle Bin and Prefetch alone.
 - A restart is only offered and never force-closes open apps.
+- Leftover folders go to the Recycle Bin and registry keys are exported before deletion; only paths named after the removed program are offered.
+- Updates are verified against the SHA-256 digest GitHub recorded for the release before the installer runs.
 
 Known limits: a few PowerShell-based tweaks (power plan, DNS) revert to the Windows default rather than a custom setting you had, and a delayed-start service comes back as plain automatic.
 
@@ -87,7 +105,7 @@ npm ci
 npm test          # catalog checks and a real registry round trip under HKCU
 npm run build     # type-check and bundle
 npm start         # run the app
-npm run dist      # build the installer into release/
+npm run dist      # build the installer and the portable exe into release/
 ```
 
 | Path | Contents |
@@ -95,6 +113,7 @@ npm run dist      # build the installer into release/
 | `shared/` | Tweak catalog, titles and descriptions, shared types |
 | `electron/engine.ts` | Pure logic: apply and revert scripts, hardware fit, scoring |
 | `electron/ps.ts` | PowerShell runner, hardware scan, memory, cleanup, restore point |
+| `electron/tools.ts` | Startup manager, uninstaller, leftover search, before/after metrics |
 | `electron/main.ts` | Window, IPC, settings and backup store |
 | `src/` | React interface |
 | `docs/` | Project website |

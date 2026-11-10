@@ -26,19 +26,34 @@ her biri tek tıkla geri alınır. Hesap yok, telemetri yok.
 - **Yalnızca uyanı önerir.** Pili tüketen ya da sende olmayan donanımı gerektiren ayarlar nedeni gösterilerek atlanır.
 - **Yazmadan önce saklar.** Her kayıt defteri değeri gerçek türüyle, her servis başlangıç moduyla kaydedilir.
 - **Tam olarak geri alır.** Geri alma saklanan değeri yükler; değer önceden yoksa siler.
-- **Bilgisayarında kalır.** Giriş yok, telemetri yok, verini gönderen ağ kodu yok.
+- **Açılışta başlayanları yönetir.** Başlangıç girdilerini Görev Yöneticisi'nin yaptığı gibi kapatıp açar.
+- **Kaldırır ve arkasını temizler.** Programları ve Windows uygulamalarını kaldırır, sonra geride kalan klasör ve kayıt anahtarlarını gösterir.
+- **Geçmiş tutar.** Her uygulama ve geri alma; öncesi ve sonrası boş bellek, süreç ve servis sayısıyla kaydedilir.
+- **Bilgisayarında kalır.** Giriş yok, telemetri yok. Tek ağ isteği, kapatabileceğin güncelleme denetimidir.
 
 | Bu PC'ye özel | Ayar kataloğu |
 |---|---|
 | <img src="docs/assets/scan.png" alt="Puan ve önerilen ayarların olduğu tarama sayfası"> | <img src="docs/assets/catalog.png" alt="Ayar başına anahtar ve risk etiketleriyle katalog"> |
 
+<p align="center"><img src="docs/assets/history.png" width="720" alt="Öncesi ve sonrası sayılarıyla değişiklik geçmişi"><br><sub>Geçmiş</sub></p>
+
 ## Kurulum
 
-1. [Son sürümden](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest) `Talkdedsec-Setup-1.0.1.exe` dosyasını indir.
+1. [Son sürümden](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest) `Talkdedsec-Setup-1.1.0.exe` dosyasını indir. Kurulum istemiyorsan `Talkdedsec-Portable-1.1.0.exe` dosyasını al.
 2. Çalıştır. Kurulum dosyası henüz kod imzalı değil; SmartScreen sorarsa **Ek bilgi > Yine de çalıştır** de.
 3. Talkdedsec'i aç. Ayarların çoğu `HKEY_LOCAL_MACHINE` altına yazdığı ya da servisleri değiştirdiği için yönetici yetkisi ister.
 
 Windows 10 veya 11, 64 bit gerekir.
+
+[Scoop](https://scoop.sh) ile:
+
+```bash
+scoop bucket add tlk https://github.com/Talkdedsec/scoop-tlk
+```
+
+```bash
+scoop install talkdedsec
+```
 
 ## Kullanım
 
@@ -47,7 +62,8 @@ Windows 10 veya 11, 64 bit gerekir.
 | **Genel bakış** | Donanımını ve sağlık puanını gör; tek tıkla optimize et, belleği boşalt, derin temizlik yap, geri yükleme noktası oluştur. |
 | **Bu PC'ye özel** | Tara, sonra önerilen seti ya da yalnızca güvenli olanları uygula. |
 | **Ayar kataloğu** | 114 ayarın tamamında ara, tek tek aç ya da kapat, risk ve yeniden başlatma etiketlerini gör. |
-| **Tercihler** | Dil (Türkçe, İngilizce), uygulamadan önce geri yükleme noktası, her şeyi geri al. |
+| **Araçlar** | Başlangıç girdileri, kalıntı temizliğiyle kurulu uygulamalar, öncesi/sonrası sayılarıyla değişiklik geçmişi. |
+| **Tercihler** | Dil (Türkçe, İngilizce), uygulamadan önce geri yükleme noktası, güncelleme denetimi, ayar setini dışa ya da içe aktarma, her şeyi geri al. |
 
 Bir ayarı kapatmak önceki değeri geri yükler. Riskli ayarlar ikinci bir onay ister.
 
@@ -73,6 +89,8 @@ Her kayıt [`shared/tweaks.json`](shared/tweaks.json) içinde düz veridir: bir 
 - İleri düzey ya da geri alınamayan ayarlar asla otomatik önerilmez.
 - Derin temizlik Geri Dönüşüm Kutusu'na ve Prefetch'e dokunmaz.
 - Yeniden başlatma yalnızca önerilir, açık uygulamaları zorla kapatmaz.
+- Kalıntı klasörleri Geri Dönüşüm Kutusu'na gider, kayıt anahtarları silinmeden önce dışa aktarılır; yalnızca kaldırılan programın adını taşıyan yollar önerilir.
+- Güncellemeler, kurulum dosyası çalışmadan önce GitHub'ın sürüm için kaydettiği SHA-256 özetiyle doğrulanır.
 
 Bilinen sınırlar: birkaç PowerShell tabanlı ayar (güç planı, DNS) senin özel ayarına değil Windows varsayılanına döner; gecikmeli başlayan servis geri alınınca düz otomatik olur.
 
@@ -87,7 +105,7 @@ npm ci
 npm test          # katalog denetimleri ve HKCU altında gerçek kayıt defteri gidiş-dönüşü
 npm run build     # tür denetimi ve paketleme
 npm start         # uygulamayı çalıştır
-npm run dist      # kurulum dosyasını release/ içine üret
+npm run dist      # kurulum dosyasını ve taşınabilir exe'yi release/ içine üret
 ```
 
 | Yol | İçerik |
@@ -95,6 +113,7 @@ npm run dist      # kurulum dosyasını release/ içine üret
 | `shared/` | Ayar kataloğu, başlık ve açıklamalar, ortak türler |
 | `electron/engine.ts` | Saf mantık: uygula ve geri al betikleri, donanım uygunluğu, puanlama |
 | `electron/ps.ts` | PowerShell çalıştırıcı, donanım taraması, bellek, temizlik, geri yükleme noktası |
+| `electron/tools.ts` | Başlangıç yöneticisi, kaldırıcı, kalıntı araması, öncesi/sonrası ölçümü |
 | `electron/main.ts` | Pencere, IPC, ayar ve yedek deposu |
 | `src/` | React arayüzü |
 | `docs/` | Proje web sitesi |

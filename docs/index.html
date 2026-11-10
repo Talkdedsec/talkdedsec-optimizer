@@ -208,7 +208,7 @@ footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(
         </a>
         <a class="btn line" href="https://github.com/Talkdedsec/talkdedsec-optimizer"><span data-t="src">Read the source</span></a>
       </div>
-      <p class="note" data-t="note">No account. No telemetry. Nothing leaves your PC.</p>
+      <p class="note" data-t="note">No account. No telemetry. Your data stays on your PC.</p>
     </div>
     <div class="stage"><div class="shot" id="heroShot"><img src="assets/overview.png" width="1240" height="820" alt="Talkdedsec overview: hardware summary, quick actions and health score" data-alt="altOverview"></div></div>
   </div>
@@ -218,7 +218,7 @@ footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(
       <div class="stat reveal"><b data-count="114">114</b><span data-t="s1">tweaks in the catalog</span></div>
       <div class="stat reveal" style="--i:1"><b data-count="102">102</b><span data-t="s2">fully reversible</span></div>
       <div class="stat reveal" style="--i:2"><b data-count="12">12</b><span data-t="s3">categories</span></div>
-      <div class="stat reveal" style="--i:3"><b data-count="0">0</b><span data-t="s4">bytes sent anywhere</span></div>
+      <div class="stat reveal" style="--i:3"><b data-count="0">0</b><span data-t="s4">accounts or sign-ins</span></div>
     </div>
   </div>
 
@@ -240,7 +240,7 @@ footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(
         <article class="card reveal">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
           <h3 data-t="f3h">No account. No telemetry.</h3>
-          <p data-t="f3p">There is no sign-in and no network code for your data. The app opens and works offline.</p>
+          <p data-t="f3p">No sign-in and nothing about you sent anywhere. The only request is an update check you can switch off.</p>
         </article>
         <article class="card reveal" style="--i:1">
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
@@ -251,6 +251,21 @@ footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(
           <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg></div>
           <h3 data-t="f5h">Memory and deep clean.</h3>
           <p data-t="f5p">Release unused working sets and the standby cache, or clear temp files and update leftovers in one pass.</p>
+        </article>
+        <article class="card reveal">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v9"/><path d="M6.3 7a8 8 0 1 0 11.4 0"/></svg></div>
+          <h3 data-t="f6h">Startup under control.</h3>
+          <p data-t="f6p">See everything that launches with Windows and switch entries off without deleting them, the way Task Manager does.</p>
+        </article>
+        <article class="card reveal" style="--i:1">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></div>
+          <h3 data-t="f7h">Uninstall without leftovers.</h3>
+          <p data-t="f7p">Remove programs and built-in Windows apps, then review the folders and registry keys they left behind before deleting them.</p>
+        </article>
+        <article class="card reveal" style="--i:2">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5M4 19h16M8 15l4-5 3 3 4-6"/></svg></div>
+          <h3 data-t="f8h">Before and after, in numbers.</h3>
+          <p data-t="f8p">Each change is logged with free memory, process and service counts measured before and after it.</p>
         </article>
       </div>
     </div>
@@ -320,6 +335,7 @@ footer{border-top:1px solid var(--line);padding:34px 0;font-size:13px;color:var(
       <details class="reveal"><summary data-t="q2">Why does it ask for administrator rights?</summary><p data-t="a2">Most tweaks write under HKEY_LOCAL_MACHINE or change services, which Windows only allows for administrators. Tweaks that only touch your own user settings work without it.</p></details>
       <details class="reveal"><summary data-t="q3">Is every tweak reversible?</summary><p data-t="a3">102 of 114 restore the exact previous value. A few PowerShell-based ones, such as the power plan and DNS, go back to the Windows default instead of a custom setting you had. Tweaks that cannot be undone are labelled and never recommended automatically.</p></details>
       <details class="reveal"><summary data-t="q4">Where are my backups kept?</summary><p data-t="a4">In a small JSON file in the app's data folder under your user profile. Nothing is uploaded.</p></details>
+      <details class="reveal"><summary data-t="q5">Does it connect to the internet?</summary><p data-t="a5">Once at startup it asks GitHub whether a newer version exists. The request carries no data about you and can be switched off in Preferences. An update is checked against the SHA-256 digest of the release before it runs.</p></details>
     </div>
   </section>
 
@@ -356,12 +372,15 @@ const TR = {
   eyebrow:"Windows 10 ve 11 · ücretsiz · açık kaynak",
   h1a:"Windows, ayarlı.", h1b:"Kalıcı değil.",
   lede:"Gerçekten sahip olduğun donanıma göre seçilen 114 performans, gizlilik ve temizlik ayarı. Her biri önceki değeri saklar; geri almak tek tık.",
-  dl:"Windows için indir", src:"Kaynağı oku", note:"Hesap yok. Telemetri yok. Bilgisayarından hiçbir şey çıkmaz.",
-  s1:"katalogdaki ayar", s2:"tamamen geri alınabilir", s3:"kategori", s4:"dışarı giden bayt",
+  dl:"Windows için indir", src:"Kaynağı oku", note:"Hesap yok. Telemetri yok. Verin bilgisayarında kalır.",
+  s1:"katalogdaki ayar", s2:"tamamen geri alınabilir", s3:"kategori", s4:"hesap ya da giriş",
   k1:"Ne yapar", f0:"İşini <em>gösteren</em> bir optimizasyon aracı.",
   f1h:"Gerçekten geri yükleyen geri alma.", f1p:"Bir değer yazılmadan önce eskisi gerçek kayıt türüyle saklanır, her servis önceki başlangıç modunu korur. Geri alınca tam olarak eskisi döner; kendi özel değerlerin de.",
   f2h:"Bu bilgisayara göre seçilir.", f2p:"Salt okunur tarama işlemciye, ekran kartına, belleğe, disk türüne, güç planına ve cihazın dizüstü olup olmadığına bakar. Pili tüketecek ya da sende olmayan donanımı gerektiren ayarlar nedeni gösterilerek atlanır.",
-  f3h:"Hesap yok. Telemetri yok.", f3p:"Giriş ekranı yok, verini gönderen ağ kodu yok. Uygulama açılır ve çevrimdışı çalışır.",
+  f3h:"Hesap yok. Telemetri yok.", f3p:"Giriş ekranı yok, seninle ilgili hiçbir şey gönderilmez. Tek istek, kapatabileceğin güncelleme denetimidir.",
+  f6h:"Başlangıç kontrol altında.", f6p:"Windows ile birlikte açılan her şeyi gör; girdileri silmeden, Görev Yöneticisi'nin yaptığı gibi kapat.",
+  f7h:"Kalıntı bırakmadan kaldır.", f7p:"Programları ve Windows'la gelen uygulamaları kaldır, sonra geride bıraktıkları klasör ve kayıt anahtarlarını silmeden önce gözden geçir.",
+  f8h:"Öncesi ve sonrası, sayılarla.", f8p:"Her değişiklik; öncesinde ve sonrasında ölçülen boş bellek, süreç ve servis sayısıyla kaydedilir.",
   f4h:"Önce geri yükleme noktası.", f4p:"İstersen herhangi bir şey uygulanmadan önce Windows geri yükleme noktası oluşturur; ikinci bir güvenlik ağı.",
   f5h:"Bellek ve derin temizlik.", f5p:"Kullanılmayan belleği ve bekleme önbelleğini boşalt ya da geçici dosyaları ve güncelleme artıklarını tek seferde temizle.",
   k2:"Nasıl çalışır", h0:"Tara. Uygula. <em>Fikrini değiştir.</em>",
@@ -379,6 +398,7 @@ const TR = {
   q1:"Windows SmartScreen uyarısı gösteriyor. Neden?", a1:"Kurulum dosyası henüz kod imzalı değil, bu yüzden Windows yayıncıyı tanımıyor. \"Ek bilgi\"ye, sonra \"Yine de çalıştır\"a bas. Kaynak kodun tamamı açık; aynı kurulum dosyasını tek komutla kendin de derleyebilirsin.",
   q2:"Neden yönetici yetkisi istiyor?", a2:"Ayarların çoğu HKEY_LOCAL_MACHINE altına yazar ya da servisleri değiştirir; Windows buna yalnızca yöneticilere izin verir. Yalnızca kendi kullanıcı ayarlarına dokunanlar yetkisiz de çalışır.",
   q3:"Her ayar geri alınabilir mi?", a3:"114 ayarın 102'si tam önceki değeri geri yükler. Güç planı ve DNS gibi birkaç PowerShell tabanlı ayar, senin özel ayarına değil Windows varsayılanına döner. Geri alınamayanlar etiketlidir ve asla otomatik önerilmez.",
+  q5:"İnternete bağlanıyor mu?", a5:"Açılışta bir kez GitHub'a yeni sürüm var mı diye sorar. İstek seninle ilgili veri taşımaz ve Tercihler'den kapatılabilir. Güncelleme, çalışmadan önce sürümün SHA-256 özetiyle doğrulanır.",
   q4:"Yedeklerim nerede duruyor?", a4:"Kullanıcı profilindeki uygulama veri klasöründe küçük bir JSON dosyasında. Hiçbir şey yüklenmez.",
   e0:"Dene. <em>Geri al.</em>", star:"GitHub'da yıldızla", req:"Windows 10 veya 11, 64 bit · MIT lisansı",
   lic:"Lisans", sec:"Güvenlik", up:"Başa dön ↑",
