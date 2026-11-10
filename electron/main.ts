@@ -168,11 +168,11 @@ async function importProfile(): Promise<string[] | null> {
   if (!filePaths[0]) return null;
   try {
     const data = JSON.parse(await readFile(filePaths[0], "utf8")) as { app?: string; tweaks?: unknown };
-    if (data.app !== "talkdedsec" || !Array.isArray(data.tweaks)) return null;
+    if (data.app !== "talkdedsec" || !Array.isArray(data.tweaks)) return [];
     // Only ids from our own catalog: the file decides which tweaks, never what they do.
     return data.tweaks.map(String).filter((id) => BY_ID.has(id));
   } catch {
-    return null;
+    return []; // unreadable: the renderer reports it; null is reserved for a cancelled dialog
   }
 }
 

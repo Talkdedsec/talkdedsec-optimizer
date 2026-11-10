@@ -117,7 +117,7 @@ export interface Api {
   startup: { list(): Promise<StartupItem[]>; set(id: string, enabled: boolean): Promise<boolean> };
   apps: { list(): Promise<InstalledApp[]>; uninstall(id: string): Promise<UninstallResult>; removeLeftovers(ids: string[]): Promise<number> };
   history: { list(): Promise<HistoryEntry[]>; clear(): Promise<void> };
-  /** export: false when cancelled. import: the tweak ids in the chosen file, null when cancelled or unreadable. */
+  /** export: false when cancelled. import: the tweak ids in the chosen file (empty when it is unreadable or foreign), null when cancelled. */
   profile: { export(): Promise<boolean>; import(): Promise<string[] | null> };
   /** check: null when up to date or offline. install: downloads, verifies and starts the installer, then the app quits. */
   update: { check(): Promise<UpdateInfo | null>; install(): Promise<boolean> };
