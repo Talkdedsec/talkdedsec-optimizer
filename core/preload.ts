@@ -8,6 +8,7 @@ const api: Api = {
   settings: { read: call("settings:read"), write: call("settings:write") },
   scan: call("scan"),
   applied: call("applied"),
+  detected: call("detected"),
   apply: call("apply"),
   revert: call("revert"),
   flushRam: call("flushRam"),

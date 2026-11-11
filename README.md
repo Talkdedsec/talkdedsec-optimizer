@@ -27,6 +27,7 @@ each one undoable with a click. No account, no telemetry.
 - **Saves before it writes.** Each registry value is stored with its real type and each service with its start mode.
 - **Undoes exactly.** Reverting restores the saved value, or removes the value if it did not exist before.
 - **Manages what starts with Windows.** Switch startup entries off and on, the same way Task Manager does.
+- **Shows what is already in place.** Tweaks that are already active on the PC, whoever made them, are marked in the catalog and left out of what gets applied.
 - **Focus mode.** The app in front gets more CPU; the windowed apps behind it drop to low priority and efficiency mode, and the ones you pick are frozen until you return to them. Everything goes back when you turn it off.
 - **Uninstalls and cleans up.** Removes programs and Windows apps, then shows the folders and registry keys left behind.
 - **Keeps a history.** Every apply and revert is logged with free memory, process and service counts before and after.

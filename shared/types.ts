@@ -111,6 +111,8 @@ export interface Api {
   settings: { read(): Promise<Settings>; write(patch: Partial<Settings>): Promise<Settings> };
   scan(): Promise<ScanResult>;
   applied(): Promise<string[]>;
+  /** Ids of the tweaks whose changes are already in place on this PC, whether or not this app made them. */
+  detected(): Promise<string[]>;
   apply(ids: string[]): Promise<RunResult>;
   revert(ids: string[]): Promise<RunResult>;
   flushRam(): Promise<{ freedGb: number; trimmed: number; standbyPurged: boolean }>;

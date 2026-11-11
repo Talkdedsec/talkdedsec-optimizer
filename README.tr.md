@@ -27,6 +27,7 @@ her biri tek tıkla geri alınır. Hesap yok, telemetri yok.
 - **Yazmadan önce saklar.** Her kayıt defteri değeri gerçek türüyle, her servis başlangıç moduyla kaydedilir.
 - **Tam olarak geri alır.** Geri alma saklanan değeri yükler; değer önceden yoksa siler.
 - **Açılışta başlayanları yönetir.** Başlangıç girdilerini Görev Yöneticisi'nin yaptığı gibi kapatıp açar.
+- **Zaten yapılmış olanı gösterir.** Bilgisayarda kim yapmış olursa olsun zaten etkin olan ayarlar katalogda işaretlenir ve uygulanacaklara katılmaz.
 - **Odak modu.** Öndeki uygulama daha fazla işlemci alır; arkadaki pencereli uygulamalar düşük önceliğe ve verim moduna geçer, seçtiklerin ise geri dönene kadar dondurulur. Kapattığında her şey eski haline döner.
 - **Kaldırır ve arkasını temizler.** Programları ve Windows uygulamalarını kaldırır, sonra geride kalan klasör ve kayıt anahtarlarını gösterir.
 - **Geçmiş tutar.** Her uygulama ve geri alma; öncesi ve sonrası boş bellek, süreç ve servis sayısıyla kaydedilir.

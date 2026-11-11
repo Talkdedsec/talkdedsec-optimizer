@@ -47,7 +47,7 @@ const summary = (d: ReturnType<typeof useApp>["d"], r: RunResult) =>
   [fmt(d.opt.okCount, { count: r.applied }), fmt(d.opt.failCount, { count: r.failed }), r.requiresRestart ? d.opt.restartPrompt : null].filter(Boolean).join(" · ");
 
 export function Dashboard({ go }: { go: (r: Route) => void }) {
-  const { d, settings, applied, runScan, apply } = useApp();
+  const { d, settings, applied, active, runScan, apply } = useApp();
   const scan = settings.lastScan;
   const p = scan?.profile ?? null;
   const [busy, setBusy] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export function Dashboard({ go }: { go: (r: Route) => void }) {
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <ActionCard emphasis icon={Rocket} title={d.dash.oneClick} hint={d.dash.oneClickHint} {...tile("one")}
             onRun={() => void run("one", async () => {
-              const ids = (scan ?? (await runScan())).recommended.filter((id) => isSafe(id) && !applied.has(id));
+              const ids = (scan ?? (await runScan())).recommended.filter((id) => isSafe(id) && !applied.has(id) && !active.has(id));
               return ids.length ? summary(d, await apply(ids)) : d.dash.nothingToApply;
             })} />
           <ActionCard icon={Zap} title={d.dash.flushRam} hint={d.dash.flushRamHint} {...tile("ram")}
@@ -150,7 +150,7 @@ export function Dashboard({ go }: { go: (r: Route) => void }) {
 }
 
 export function Scan() {
-  const { d, lang, settings, applied, runScan, apply } = useApp();
+  const { d, lang, settings, applied, active, runScan, apply } = useApp();
   const scan = settings.lastScan;
   const [scanning, setScanning] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -169,7 +169,7 @@ export function Scan() {
     }
   };
   const doApply = async (ids: string[]) => {
-    const pending = ids.filter((id) => !applied.has(id));
+    const pending = ids.filter((id) => !applied.has(id) && !active.has(id));
     if (pending.length === 0) return setNote(d.dash.nothingToApply);
     setApplying(true);
     try {
@@ -248,7 +248,7 @@ export function Scan() {
           {recommended.map((t) => (
             <div key={t.id} className="flex items-start gap-4 px-5 py-4">
               <div className="mt-[3px] grid size-6 shrink-0 place-items-center rounded-full bg-white/[0.08]">
-                {applied.has(t.id) ? <Check className="size-3.5 text-white" /> : <ShieldCheck className="size-3.5 text-white/60" />}
+                {applied.has(t.id) || active.has(t.id) ? <Check className="size-3.5 text-white" /> : <ShieldCheck className="size-3.5 text-white/60" />}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
@@ -295,14 +295,16 @@ export function Scan() {
 }
 
 function TweakRow({ tweak, unsuitable, checked, onToggle }: { tweak: Tweak; unsuitable?: SkipReason; checked: boolean; onToggle: (v: boolean) => void }) {
-  const { d, lang, applied } = useApp();
+  const { d, lang, applied, active } = useApp();
   const [title, description] = TEXT[tweak.id][lang];
+  const inPlace = active.has(tweak.id);
   return (
     <div className={cx("flex items-start gap-4 px-5 py-4 transition-colors duration-200", checked ? "bg-white/[0.035]" : "hover:bg-white/[0.02]")}>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[13px] font-medium tracking-[-0.01em]">{title}</span>
           {applied.has(tweak.id) && <Badge tone="solid"><Check className="mr-1 size-2.5" />{d.opt.applied}</Badge>}
+          {inPlace && <Badge tone="solid"><Check className="mr-1 size-2.5" />{d.opt.active}</Badge>}
           {tweak.impact !== "safe" && <Badge tone="outline">{d.impact[tweak.impact]}</Badge>}
           {!tweak.reversible && <Badge><Lock className="mr-1 size-2.5" />{d.opt.oneWay}</Badge>}
           {tweak.requiresRestart && <Badge>{d.opt.needsRestart}</Badge>}
@@ -310,7 +312,8 @@ function TweakRow({ tweak, unsuitable, checked, onToggle }: { tweak: Tweak; unsu
         <p className="mt-1 max-w-[720px] text-[12px] leading-relaxed text-white/40">{description}</p>
         {unsuitable && <p className="mt-1 text-[12px] leading-relaxed text-white/55">{d.opt.unsuitable}: {fmt(d.skip[unsuitable.code], unsuitable)}</p>}
       </div>
-      <Switch checked={checked} onChange={onToggle} label={title} className="mt-0.5" />
+      {/* Already in place without us: shown on, and locked, because there is nothing to apply and no backup to undo. */}
+      <Switch checked={checked || inPlace} onChange={onToggle} label={title} className={cx("mt-0.5", inPlace && "pointer-events-none opacity-50")} />
     </div>
   );
 }
@@ -330,7 +333,7 @@ export const Chip = ({ active, onClick, children }: { active: boolean; onClick: 
 );
 
 export function Optimize() {
-  const { d, lang, info, settings, applied, apply, revert } = useApp();
+  const { d, lang, info, settings, applied, active, apply, revert } = useApp();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<Category | "all">("all");
   const [appliedOnly, setAppliedOnly] = useState(false);
@@ -345,10 +348,10 @@ export function Optimize() {
     const q = query.trim().toLocaleLowerCase(lang);
     return TWEAKS.filter((t) => {
       if (category !== "all" && t.category !== category) return false;
-      if (appliedOnly && !applied.has(t.id)) return false;
+      if (appliedOnly && !applied.has(t.id) && !active.has(t.id)) return false;
       return !q || TEXT[t.id][lang].some((s) => s.toLocaleLowerCase(lang).includes(q)) || t.id.includes(q);
     });
-  }, [query, category, appliedOnly, applied, lang]);
+  }, [query, category, appliedOnly, applied, active, lang]);
   const groups = CATEGORIES.map((c) => ({ category: c, tweaks: visible.filter((t) => t.category === c) })).filter((g) => g.tweaks.length);
 
   const chosen = [...selected].map((id) => BY_ID.get(id)!);
@@ -422,7 +425,7 @@ export function Optimize() {
         </div>
         <Button variant={appliedOnly ? "primary" : "secondary"} aria-pressed={appliedOnly} onClick={() => setAppliedOnly((v) => !v)}>{appliedOnly ? d.opt.appliedOnly : d.opt.allTweaks}</Button>
         {/* Select-all never picks advanced, one-way or unsuitable tweaks; those are switched on one by one, on purpose. */}
-        <Button disabled={visible.length === 0} onClick={() => setSelected(new Set(visible.filter((t) => t.reversible && t.impact !== "advanced" && !unsuitable.has(t.id)).map((t) => t.id)))}>{d.opt.selectAll}</Button>
+        <Button disabled={visible.length === 0} onClick={() => setSelected(new Set(visible.filter((t) => t.reversible && t.impact !== "advanced" && !unsuitable.has(t.id) && !active.has(t.id)).map((t) => t.id)))}>{d.opt.selectAll}</Button>
         <Button variant="ghost" disabled={selected.size === 0} onClick={() => setSelected(new Set())}>{d.opt.clear}</Button>
       </div>
       <div className="mb-5 flex flex-wrap gap-1.5">

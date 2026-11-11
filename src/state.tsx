@@ -13,6 +13,8 @@ interface Ctx {
   info: AppInfo;
   settings: Settings;
   applied: Set<string>;
+  /** Already in place on this PC, but not applied by this app: there is no backup to undo them with. */
+  active: Set<string>;
   patch(p: Partial<Settings>): Promise<void>;
   runScan(): Promise<ScanResult>;
   apply(ids: string[]): Promise<RunResult>;
@@ -27,7 +29,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [applied, setApplied] = useState<Set<string>>(new Set());
 
-  const refreshApplied = useCallback(async () => setApplied(new Set(await window.api.applied())), []);
+  const [detected, setDetected] = useState<Set<string>>(new Set());
+  const refreshApplied = useCallback(async () => {
+    setApplied(new Set(await window.api.applied()));
+    setDetected(new Set(await window.api.detected()));
+  }, []);
   useEffect(() => {
     void window.api.info().then(setInfo);
     void window.api.settings.read().then(setSettings);
@@ -45,6 +51,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       info,
       settings,
       applied,
+      active: new Set([...detected].filter((id) => !applied.has(id))),
       patch: async (p) => setSettings(await window.api.settings.write(p)),
       runScan: async () => {
         const lastScan = await window.api.scan();
@@ -55,7 +62,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       apply: (ids) => window.api.apply(ids).finally(refreshApplied),
       revert: (ids) => window.api.revert(ids).finally(refreshApplied),
     };
-  }, [info, settings, applied, refreshApplied]);
+  }, [info, settings, applied, detected, refreshApplied]);
 
   if (!value) return <div className="relative z-10 grid h-full place-items-center"><Spinner className="size-6" /></div>;
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

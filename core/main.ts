@@ -5,7 +5,7 @@ import { dirname, join } from "node:path";
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, nativeTheme, net, shell, Tray } from "electron";
 import logo from "../src/assets/logo.png?inline";
 import type { AppInfo, BackupEntry, HistoryEntry, Leftover, Metrics, RunResult, Settings, Tweak, TweakResult, UpdateInfo } from "../shared/types.ts";
-import { analyze, applyScript, BY_ID, revertScript } from "./engine.ts";
+import { analyze, applyScript, BY_ID, detectScript, revertScript, TWEAKS } from "./engine.ts";
 import { cleanNames, focusStatus, setFocus } from "./focus.ts";
 import { deepClean, flushRam, isElevated, restorePoint, runJson, scanHardware } from "./ps.ts";
 import { isAppId, isNewer, listApps, listStartup, measure, removeLeftovers, setStartup, uninstallApp } from "./tools.ts";
@@ -258,6 +258,7 @@ function registerIpc() {
     return result;
   });
   ipcMain.handle("applied", async () => Object.keys(await readBackups()));
+  ipcMain.handle("detected", async () => list(await runJson<string[]>(detectScript(TWEAKS), 60_000)));
   ipcMain.handle("apply", (_e, ids: string[]) => apply(list(ids).map(String)));
   ipcMain.handle("revert", (_e, ids: string[]) => revert(list(ids).map(String)));
   ipcMain.handle("flushRam", flushRam);

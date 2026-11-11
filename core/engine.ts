@@ -96,6 +96,36 @@ export function revertScript(items: { tweak: Tweak; entries: BackupEntry[] }[]):
   return [HEAD, ...body, TAIL].join("\n");
 }
 
+const DETECT_HELPERS = `
+$svc=@{};Get-CimInstance Win32_Service|ForEach-Object{$svc[$_.Name]=$_.StartMode}
+function Has($p,$n,$v){
+  $k=Get-Item -LiteralPath $p -ErrorAction SilentlyContinue
+  if(-not $k -or $k.GetValueNames() -notcontains $n){return $false}
+  $c=$k.GetValue($n,$null,'DoNotExpandEnvironmentNames')
+  if($v -is [byte[]]){return ($c -is [byte[]]) -and (($c -join ',') -eq ($v -join ','))}
+  return "$c" -eq "$v"
+}
+function Off($s){-not $svc.ContainsKey($s) -or $svc[$s] -eq 'Disabled'}
+function Any($names){@($names|Where-Object{$svc.ContainsKey($_)}).Count -gt 0}`;
+
+/**
+ * One read-only script that prints the ids of the tweaks already in place on this PC, whoever made them.
+ * A tweak with a PowerShell step is never listed: there is nothing to compare its effect with.
+ */
+export function detectScript(tweaks: Tweak[]): string {
+  const body = tweaks.filter((t) => t.actions.every((a) => a.kind !== "powershell")).map((t) => {
+    const checks = t.actions.map((a) => {
+      if (a.kind === "registry") return `(Has ${q(`Registry::${HIVE[a.hive]}\\${a.key.replace(/\//g, "\\")}`)} ${q(a.name)} (${psValue(REG_TYPE[a.type], a.value)}))`;
+      return a.kind === "service" ? `(Off ${q(a.service)})` : "";
+    });
+    // A service this PC does not have counts as off, but it cannot be the only evidence.
+    const services = t.actions.flatMap((a) => (a.kind === "service" ? [q(a.service)] : []));
+    if (services.length === t.actions.length) checks.push(`(Any @(${services.join(",")}))`);
+    return `if(${checks.join(" -and ")}){$ids+=${q(t.id)}}`;
+  });
+  return ["$ErrorActionPreference='SilentlyContinue';$ids=@()", DETECT_HELPERS, ...body, "ConvertTo-Json -InputObject @($ids) -Compress"].join("\n");
+}
+
 /** Why a tweak does not fit this machine, or null when it does. */
 export function skipReason(t: Tweak, p: Profile): SkipReason | null {
   const r = t.requires;

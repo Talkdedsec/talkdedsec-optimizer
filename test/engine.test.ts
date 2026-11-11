@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { analyze, applyScript, BY_ID, psValue, revertScript, TWEAKS } from "../core/engine.ts";
+import { analyze, applyScript, BY_ID, detectScript, psValue, revertScript, TWEAKS } from "../core/engine.ts";
 import { runJson, runPs } from "../core/ps.ts";
 import type { BackupEntry, Profile, Tweak } from "../shared/types.ts";
 
@@ -59,14 +59,20 @@ test("apply then revert restores the registry", { skip: process.platform !== "wi
     runJson<Record<string, unknown>>(`$k=Get-Item '${path}';$o=[ordered]@{};foreach($n in $k.GetValueNames()){$o[$n]=$k.GetValue($n)};$o|ConvertTo-Json -Compress`);
   await runPs(`New-Item '${path}' -Force|Out-Null;New-ItemProperty '${path}' -Name 'Existing Value' -Value "old ' quote" -PropertyType String -Force|Out-Null`);
   try {
+    // a script step has no state to read back, so such a tweak is never reported as in place
+    const scripted: Tweak = { ...tweak, id: "test.scripted", actions: [...tweak.actions, { kind: "powershell", script: "" }] };
+    const detect = () => runJson<string[]>(detectScript([tweak, scripted]));
+    assert.deepEqual(await detect(), []);
     const [res] = (await runJson<{ ok: boolean; error: string; previous: BackupEntry[] }[]>(applyScript([tweak])))!;
     assert.equal(res.error, "");
     assert.equal(res.previous.length, 3);
     assert.deepEqual(await read(), { "Existing Value": "new", Fresh: -1, Bin: [144, 18] });
+    assert.deepEqual(await detect(), ["test.roundtrip"]);
 
     const [undone] = (await runJson<{ ok: boolean }[]>(revertScript([{ tweak, entries: res.previous }])))!;
     assert.ok(undone.ok);
     assert.deepEqual(await read(), { "Existing Value": "old ' quote" });
+    assert.deepEqual(await detect(), []);
   } finally {
     await runPs(`Remove-Item '${path}' -Recurse -Force`);
   }
