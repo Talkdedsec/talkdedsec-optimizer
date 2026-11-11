@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { analyze, applyScript, BY_ID, psValue, revertScript, TWEAKS } from "../electron/engine.ts";
-import { runJson, runPs } from "../electron/ps.ts";
+import { analyze, applyScript, BY_ID, psValue, revertScript, TWEAKS } from "../core/engine.ts";
+import { runJson, runPs } from "../core/ps.ts";
 import type { BackupEntry, Profile, Tweak } from "../shared/types.ts";
 
 const profile: Profile = {
@@ -72,8 +72,35 @@ test("apply then revert restores the registry", { skip: process.platform !== "wi
   }
 });
 
+// Real round trip on a process of our own: throttle, freeze, then put it back.
+test("focus mode throttles, freezes and restores a process", { skip: process.platform !== "win32" }, async () => {
+  const { spawn } = await import("node:child_process");
+  const { cleanNames, FOCUS_LIB } = await import("../core/focus.ts");
+  assert.deepEqual(cleanNames(["Brave", " game.x64 ", "a'); calc", "brave", 7]), ["brave", "game.x64", "7"]);
+
+  const victim = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+  try {
+    const r = await runJson<{ applied: boolean; throttled: string; frozen: boolean; restored: string; thawed: boolean; missing: boolean }>(`${FOCUS_LIB}
+$id=${victim.pid}
+function Suspended{ $t=@((Get-Process -Id $id).Threads); @($t|Where-Object{$_.ThreadState -eq 'Wait' -and $_.WaitReason -eq 'Suspended'}).Count -eq $t.Count }
+$o=[ordered]@{}
+$o.applied=[TlkFocus]::Apply($id,2)
+$o.throttled="$((Get-Process -Id $id).PriorityClass)"
+[TlkFocus]::Apply($id,3)|Out-Null
+$o.frozen=Suspended
+[TlkFocus]::Apply($id,0)|Out-Null
+$o.restored="$((Get-Process -Id $id).PriorityClass)"
+$o.thawed=-not (Suspended)
+$o.missing=[TlkFocus]::Apply(999999,2)
+$o|ConvertTo-Json -Compress`);
+    assert.deepEqual(r, { applied: true, throttled: "BelowNormal", frozen: true, restored: "Normal", thawed: true, missing: false });
+  } finally {
+    victim.kill();
+  }
+});
+
 test("version compare, startup ids and leftover names", async () => {
-  const { appNames, isAppId, isNewer, leftoverCandidates, parseStartupId } = await import("../electron/tools.ts");
+  const { appNames, isAppId, isNewer, leftoverCandidates, parseStartupId } = await import("../core/tools.ts");
   assert.equal(isNewer("1.0.10", "1.0.9"), true);
   assert.equal(isNewer("v1.1.0", "1.1.0"), false);
   assert.equal(isNewer("1.0.0", "1.2.0"), false);
@@ -97,7 +124,7 @@ test("version compare, startup ids and leftover names", async () => {
 });
 
 test("startup switch round trip and leftover removal on real keys", async () => {
-  const { listStartup, measure, removeLeftovers, setStartup } = await import("../electron/tools.ts");
+  const { listStartup, measure, removeLeftovers, setStartup } = await import("../core/tools.ts");
   const { mkdtemp, mkdir, writeFile, access } = await import("node:fs/promises");
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");

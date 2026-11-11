@@ -1,5 +1,5 @@
-// Everything that touches Windows goes through PowerShell here. No Electron imports, so tests can use it.
-import { spawn } from "node:child_process";
+// Everything that touches Windows goes through PowerShell here. No desktop-runtime imports, so tests can use it.
+import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -29,6 +29,19 @@ export async function runPs(script: string, timeoutMs = 60_000): Promise<{ ok: b
   } finally {
     await rm(dir, { recursive: true, force: true }).catch(() => {});
   }
+}
+
+/** Starts a script that keeps running; the caller owns the process. Its temp file goes when it ends. */
+export async function startPs(script: string): Promise<ChildProcessWithoutNullStreams> {
+  const dir = await mkdtemp(join(tmpdir(), "tlk-opt-"));
+  const file = join(dir, "run.ps1");
+  await writeFile(file, "﻿" + PRELUDE + script, "utf8");
+  // Through cmd: Windows kills our direct children with us, a grandchild lives on and gets to undo its work when we die.
+  // (detached would do the same, but PowerShell prints nothing without a console.)
+  const child = spawn("cmd.exe", ["/d", "/c", "powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", file], { windowsHide: true });
+  const clean = () => void rm(dir, { recursive: true, force: true }).catch(() => {});
+  child.once("error", clean).once("close", clean);
+  return child;
 }
 
 /** Runs a script whose last output is JSON. Null when it printed none. */

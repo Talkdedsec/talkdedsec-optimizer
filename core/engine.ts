@@ -1,4 +1,4 @@
-// Pure logic: the catalog, the PowerShell it turns into, and the hardware analysis. No Electron, no I/O.
+// Pure logic: the catalog, the PowerShell it turns into, and the hardware analysis. No desktop runtime, no I/O.
 import data from "../shared/tweaks.json" with { type: "json" };
 import type { BackupEntry, Finding, Profile, ScanResult, SkipReason, Tweak } from "../shared/types.ts";
 

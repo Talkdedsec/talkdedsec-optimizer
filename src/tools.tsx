@@ -1,13 +1,13 @@
 import { ArrowRight, FolderOpen, KeyRound, Lock, RefreshCw, Search, Trash2 } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { TEXT } from "../shared/texts.ts";
-import type { HistoryEntry, InstalledApp, Leftover, Metrics, StartupItem } from "../shared/types.ts";
+import type { FocusStatus, HistoryEntry, InstalledApp, Leftover, Metrics, StartupItem } from "../shared/types.ts";
 import { fmt } from "./i18n.ts";
 import { Chip } from "./pages.tsx";
 import { useApp } from "./state.tsx";
 import { Badge, Button, cx, PageHeader, Spinner, Switch, Toast, useArmed } from "./ui.tsx";
 
-type Tab = "startup" | "apps" | "history";
+type Tab = "startup" | "apps" | "history" | "focus";
 
 /** Loads a list once and again on demand; `rows` is null while the first load runs. */
 function useList<T>(load: () => Promise<T[]>) {
@@ -235,6 +235,62 @@ function HistoryList() {
   );
 }
 
+function Focus() {
+  const { d, info, settings, applied, patch } = useApp();
+  const cfg = settings.focus;
+  const [status, setStatus] = useState<FocusStatus | null>(null);
+  useEffect(() => {
+    const load = () => void window.api.focus.status().then(setStatus);
+    load();
+    const timer = setInterval(load, 2000);
+    return () => clearInterval(timer);
+  }, [cfg]);
+
+  // Apps the watcher sees now, plus the ones already given a rule, so a rule stays editable while its app is closed.
+  const names = useMemo(() => [...new Set([...(status?.apps ?? []), ...cfg.freeze, ...cfg.skip])].sort(), [status, cfg]);
+  const setMode = (name: string, mode: "throttle" | "skip" | "freeze") =>
+    void patch({
+      focus: {
+        ...cfg,
+        freeze: mode === "freeze" ? [...cfg.freeze.filter((n) => n !== name), name] : cfg.freeze.filter((n) => n !== name),
+        skip: mode === "skip" ? [...cfg.skip.filter((n) => n !== name), name] : cfg.skip.filter((n) => n !== name),
+      },
+    });
+
+  return (
+    <>
+      <p className="mb-4 max-w-[640px] text-[12px] leading-relaxed text-white/40">{d.tools.focusHint}</p>
+      <div className="glass mb-4 flex items-center gap-4 px-5 py-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-[13px] font-medium tracking-[-0.01em]">{d.tools.focusTitle}</div>
+          {!info.elevated && <p className="mt-1 text-[12px] text-white/35">{d.tools.focusNoAdmin}</p>}
+          {applied.has("perf.disable-power-throttling") && <p className="mt-1 text-[12px] text-white/35">{d.tools.focusConflict}</p>}
+        </div>
+        <Switch checked={cfg.enabled} onChange={(enabled) => void patch({ focus: { ...cfg, enabled } })} label={d.tools.focusTitle} />
+      </div>
+      <p className="mb-3 max-w-[640px] text-[12px] leading-relaxed text-white/40">{d.tools.focusFreezeHint}</p>
+      <Panel rows={status && names} empty={d.tools.focusEmpty}>
+        {names.map((name) => {
+          const mode = cfg.freeze.includes(name) ? "freeze" : cfg.skip.includes(name) ? "skip" : "throttle";
+          return (
+            <div key={name} className="flex flex-wrap items-center gap-3 px-5 py-3.5">
+              <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                <span className="truncate text-[13px] font-medium tracking-[-0.01em]">{name}</span>
+                {status?.foreground === name && <Badge tone="solid">{d.tools.focusForeground}</Badge>}
+                {status?.throttled.includes(name) && <Badge>{d.tools.focusThrottled}</Badge>}
+                {status?.frozen.includes(name) && <Badge tone="outline">{d.tools.focusFrozen}</Badge>}
+              </div>
+              <Chip active={mode === "throttle"} onClick={() => setMode(name, "throttle")}>{d.tools.focusModeThrottle}</Chip>
+              <Chip active={mode === "skip"} onClick={() => setMode(name, "skip")}>{d.tools.focusModeSkip}</Chip>
+              <Chip active={mode === "freeze"} onClick={() => setMode(name, "freeze")}>{d.tools.focusModeFreeze}</Chip>
+            </div>
+          );
+        })}
+      </Panel>
+    </>
+  );
+}
+
 export function Tools() {
   const { d } = useApp();
   const [tab, setTab] = useState<Tab>("startup");
@@ -245,10 +301,12 @@ export function Tools() {
         <Chip active={tab === "startup"} onClick={() => setTab("startup")}>{d.tools.tabStartup}</Chip>
         <Chip active={tab === "apps"} onClick={() => setTab("apps")}>{d.tools.tabApps}</Chip>
         <Chip active={tab === "history"} onClick={() => setTab("history")}>{d.tools.tabHistory}</Chip>
+        <Chip active={tab === "focus"} onClick={() => setTab("focus")}>{d.tools.tabFocus}</Chip>
       </div>
       {tab === "startup" && <Startup />}
       {tab === "apps" && <Apps />}
       {tab === "history" && <HistoryList />}
+      {tab === "focus" && <Focus />}
     </>
   );
 }

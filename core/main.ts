@@ -2,9 +2,11 @@ import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, net, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, nativeTheme, net, shell, Tray } from "electron";
+import logo from "../src/assets/logo.png?inline";
 import type { AppInfo, BackupEntry, HistoryEntry, Leftover, Metrics, RunResult, Settings, Tweak, TweakResult, UpdateInfo } from "../shared/types.ts";
 import { analyze, applyScript, BY_ID, revertScript } from "./engine.ts";
+import { cleanNames, focusStatus, setFocus } from "./focus.ts";
 import { deepClean, flushRam, isElevated, restorePoint, runJson, scanHardware } from "./ps.ts";
 import { isAppId, isNewer, listApps, listStartup, measure, removeLeftovers, setStartup, uninstallApp } from "./tools.ts";
 
@@ -14,7 +16,7 @@ type RawResult = { id: string; ok: boolean; error?: string; skipped?: boolean; p
 type History = { entries: HistoryEntry[] };
 const REPO = "Talkdedsec/talkdedsec-optimizer";
 
-const DEFAULTS: Settings = { lang: "tr", createRestorePoint: true, checkUpdates: true, lastScan: null };
+const DEFAULTS: Settings = { lang: "tr", createRestorePoint: true, checkUpdates: true, lastScan: null, focus: { enabled: false, freeze: [], skip: [] } };
 const userFile = (name: string) => join(app.getPath("userData"), name);
 
 async function readJson<T>(name: string, fallback: T): Promise<T> {
@@ -178,6 +180,34 @@ async function importProfile(): Promise<string[] | null> {
 
 let leftovers = new Map<string, Leftover>();
 let win: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let quitting = false;
+// Our own mark for the window and the tray, so an unpackaged run does not show the runtime's icon either.
+const ICON = nativeImage.createFromDataURL(logo);
+
+const showWindow = () => {
+  if (win?.isMinimized()) win.restore();
+  win?.show();
+  win?.focus();
+};
+
+/** Starts or stops the watcher to match the settings. While it runs the app lives in the tray, so closing the window does not end it. */
+async function syncFocus(s: Settings) {
+  if (s.focus.enabled && !tray) {
+    tray = new Tray(ICON.resize({ width: 32, height: 32 }));
+    tray.setToolTip("Talkdedsec");
+    tray.on("click", showWindow);
+  }
+  if (!s.focus.enabled && tray) {
+    tray.destroy();
+    tray = null;
+  }
+  tray?.setContextMenu(Menu.buildFromTemplate([
+    { label: s.lang === "tr" ? "Göster" : "Show", click: showWindow },
+    { label: s.lang === "tr" ? "Çıkış" : "Quit", click: () => app.quit() },
+  ]));
+  await setFocus(s.focus);
+}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -188,9 +218,15 @@ function createWindow() {
     show: false,
     frame: false,
     backgroundColor: "#000000",
+    icon: ICON,
     webPreferences: { preload: join(__dirname, "preload.js"), contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   win.once("ready-to-show", () => win?.show());
+  win.on("close", (e) => {
+    if (!tray || quitting) return;
+    e.preventDefault();
+    win?.hide();
+  });
   const sendMax = () => win?.webContents.send("window:maximized", win.isMaximized());
   win.on("maximize", sendMax);
   win.on("unmaximize", sendMax);
@@ -209,9 +245,13 @@ function registerIpc() {
   ipcMain.handle("settings:read", readSettings);
   ipcMain.handle("settings:write", async (_e, patch: Partial<Settings>) => {
     const next = { ...(await readSettings()), ...patch };
+    // The names end up in a script: keep only what looks like a process name.
+    if (patch.focus) next.focus = { enabled: patch.focus.enabled === true, freeze: cleanNames(patch.focus.freeze), skip: cleanNames(patch.focus.skip) };
     await writeJson("settings.json", next);
+    if (patch.focus || patch.lang) await syncFocus(next);
     return next;
   });
+  ipcMain.handle("focus:status", focusStatus);
   ipcMain.handle("scan", async () => {
     const result = analyze(await scanHardware());
     await writeJson("settings.json", { ...(await readSettings()), lastScan: result });
@@ -251,14 +291,17 @@ function registerIpc() {
 
 if (!app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on("second-instance", () => {
-    if (win?.isMinimized()) win.restore();
-    win?.focus();
-  });
+  app.on("second-instance", showWindow);
   app.on("window-all-closed", () => app.quit());
-  void app.whenReady().then(() => {
+  // Closing the watcher's pipe makes it put every process back, also when this process dies without getting here.
+  app.on("before-quit", () => {
+    quitting = true;
+    void setFocus(null);
+  });
+  void app.whenReady().then(async () => {
     nativeTheme.themeSource = "dark";
     registerIpc();
     createWindow();
+    await syncFocus(await readSettings());
   });
 }

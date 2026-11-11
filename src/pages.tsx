@@ -3,7 +3,7 @@ import {
   Sparkles, Trash2, TriangleAlert, Zap,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { BY_ID, TWEAKS } from "../electron/engine.ts";
+import { BY_ID, TWEAKS } from "../core/engine.ts";
 import { TEXT } from "../shared/texts.ts";
 import { CATEGORIES, type Category, type RunResult, type SkipReason, type Tweak } from "../shared/types.ts";
 import type { Route } from "./App.tsx";

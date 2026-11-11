@@ -27,6 +27,7 @@ each one undoable with a click. No account, no telemetry.
 - **Saves before it writes.** Each registry value is stored with its real type and each service with its start mode.
 - **Undoes exactly.** Reverting restores the saved value, or removes the value if it did not exist before.
 - **Manages what starts with Windows.** Switch startup entries off and on, the same way Task Manager does.
+- **Focus mode.** The app in front gets more CPU; the windowed apps behind it drop to low priority and efficiency mode, and the ones you pick are frozen until you return to them. Everything goes back when you turn it off.
 - **Uninstalls and cleans up.** Removes programs and Windows apps, then shows the folders and registry keys left behind.
 - **Keeps a history.** Every apply and revert is logged with free memory, process and service counts before and after.
 - **Stays on your PC.** No sign-in, no telemetry. The only network request is an update check you can turn off.
@@ -62,7 +63,7 @@ scoop install talkdedsec
 | **Overview** | See your hardware and health score, run one-click optimize, free memory, deep clean, create a restore point. |
 | **For this PC** | Scan, then apply the recommended set or only the safe ones. |
 | **Tweak catalog** | Search all 114 tweaks, switch each one on or off, see risk and restart badges. |
-| **Tools** | Startup entries, installed apps with leftover cleanup, history of changes with before/after numbers. |
+| **Tools** | Startup entries, installed apps with leftover cleanup, history of changes with before/after numbers, focus mode. |
 | **Preferences** | Language (English, Turkish), restore point before applying, update check, export or import a tweak set, revert everything. |
 
 Switching a tweak off restores what was there before. Risky tweaks ask for a second confirmation.
@@ -111,10 +112,11 @@ npm run dist      # build the installer and the portable exe into release/
 | Path | Contents |
 |---|---|
 | `shared/` | Tweak catalog, titles and descriptions, shared types |
-| `electron/engine.ts` | Pure logic: apply and revert scripts, hardware fit, scoring |
-| `electron/ps.ts` | PowerShell runner, hardware scan, memory, cleanup, restore point |
-| `electron/tools.ts` | Startup manager, uninstaller, leftover search, before/after metrics |
-| `electron/main.ts` | Window, IPC, settings and backup store |
+| `core/engine.ts` | Pure logic: apply and revert scripts, hardware fit, scoring |
+| `core/ps.ts` | PowerShell runner, hardware scan, memory, cleanup, restore point |
+| `core/tools.ts` | Startup manager, uninstaller, leftover search, before/after metrics |
+| `core/focus.ts` | Focus mode: foreground watcher that boosts, throttles, freezes and restores processes |
+| `core/main.ts` | Window, IPC, settings and backup store |
 | `src/` | React interface |
 | `docs/` | Project website |
 

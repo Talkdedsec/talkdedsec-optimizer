@@ -27,6 +27,7 @@ her biri tek tıkla geri alınır. Hesap yok, telemetri yok.
 - **Yazmadan önce saklar.** Her kayıt defteri değeri gerçek türüyle, her servis başlangıç moduyla kaydedilir.
 - **Tam olarak geri alır.** Geri alma saklanan değeri yükler; değer önceden yoksa siler.
 - **Açılışta başlayanları yönetir.** Başlangıç girdilerini Görev Yöneticisi'nin yaptığı gibi kapatıp açar.
+- **Odak modu.** Öndeki uygulama daha fazla işlemci alır; arkadaki pencereli uygulamalar düşük önceliğe ve verim moduna geçer, seçtiklerin ise geri dönene kadar dondurulur. Kapattığında her şey eski haline döner.
 - **Kaldırır ve arkasını temizler.** Programları ve Windows uygulamalarını kaldırır, sonra geride kalan klasör ve kayıt anahtarlarını gösterir.
 - **Geçmiş tutar.** Her uygulama ve geri alma; öncesi ve sonrası boş bellek, süreç ve servis sayısıyla kaydedilir.
 - **Bilgisayarında kalır.** Giriş yok, telemetri yok. Tek ağ isteği, kapatabileceğin güncelleme denetimidir.
@@ -62,7 +63,7 @@ scoop install talkdedsec
 | **Genel bakış** | Donanımını ve sağlık puanını gör; tek tıkla optimize et, belleği boşalt, derin temizlik yap, geri yükleme noktası oluştur. |
 | **Bu PC'ye özel** | Tara, sonra önerilen seti ya da yalnızca güvenli olanları uygula. |
 | **Ayar kataloğu** | 114 ayarın tamamında ara, tek tek aç ya da kapat, risk ve yeniden başlatma etiketlerini gör. |
-| **Araçlar** | Başlangıç girdileri, kalıntı temizliğiyle kurulu uygulamalar, öncesi/sonrası sayılarıyla değişiklik geçmişi. |
+| **Araçlar** | Başlangıç girdileri, kalıntı temizliğiyle kurulu uygulamalar, öncesi/sonrası sayılarıyla değişiklik geçmişi, odak modu. |
 | **Tercihler** | Dil (Türkçe, İngilizce), uygulamadan önce geri yükleme noktası, güncelleme denetimi, ayar setini dışa ya da içe aktarma, her şeyi geri al. |
 
 Bir ayarı kapatmak önceki değeri geri yükler. Riskli ayarlar ikinci bir onay ister.
@@ -111,10 +112,11 @@ npm run dist      # kurulum dosyasını ve taşınabilir exe'yi release/ içine 
 | Yol | İçerik |
 |---|---|
 | `shared/` | Ayar kataloğu, başlık ve açıklamalar, ortak türler |
-| `electron/engine.ts` | Saf mantık: uygula ve geri al betikleri, donanım uygunluğu, puanlama |
-| `electron/ps.ts` | PowerShell çalıştırıcı, donanım taraması, bellek, temizlik, geri yükleme noktası |
-| `electron/tools.ts` | Başlangıç yöneticisi, kaldırıcı, kalıntı araması, öncesi/sonrası ölçümü |
-| `electron/main.ts` | Pencere, IPC, ayar ve yedek deposu |
+| `core/engine.ts` | Saf mantık: uygula ve geri al betikleri, donanım uygunluğu, puanlama |
+| `core/ps.ts` | PowerShell çalıştırıcı, donanım taraması, bellek, temizlik, geri yükleme noktası |
+| `core/tools.ts` | Başlangıç yöneticisi, kaldırıcı, kalıntı araması, öncesi/sonrası ölçümü |
+| `core/focus.ts` | Odak modu: ön plan izleyicisi; süreçleri öne alır, kısar, dondurur ve geri döndürür |
+| `core/main.ts` | Pencere, IPC, ayar ve yedek deposu |
 | `src/` | React arayüzü |
 | `docs/` | Proje web sitesi |
 

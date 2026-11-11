@@ -14,7 +14,7 @@
   },
   "homepage": "https://talkdedsec.com",
   "private": true,
-  "main": "dist-electron/main.js",
+  "main": "dist-core/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -51,7 +51,7 @@
     },
     "files": [
       "dist",
-      "dist-electron"
+      "dist-core"
     ],
     "win": {
       "target": [
@@ -59,7 +59,7 @@
         "portable"
       ],
       "requestedExecutionLevel": "requireAdministrator",
-      "icon": "build/icon.png"
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,

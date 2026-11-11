@@ -1,4 +1,4 @@
-// Startup manager, uninstaller with leftover cleanup, and before/after metrics. No Electron imports, so tests can use it.
+// Startup manager, uninstaller with leftover cleanup, and before/after metrics. No desktop-runtime imports, so tests can use it.
 import type { InstalledApp, Leftover, Metrics, StartupItem } from "../shared/types.ts";
 import { runJson } from "./ps.ts";
 

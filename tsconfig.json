@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "types": ["node", "vite/client"]
   },
-  "include": ["electron", "shared", "src", "test", "vite.config.ts"]
+  "include": ["core", "shared", "src", "test", "vite.config.ts"]
 }

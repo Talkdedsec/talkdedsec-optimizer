@@ -90,7 +90,11 @@ export interface RunResult {
   requiresRestart: boolean;
 }
 
-export interface Settings { lang: Lang; createRestorePoint: boolean; checkUpdates: boolean; lastScan: ScanResult | null }
+/** Process names, lower case and without ".exe". Apps in neither list are throttled in the background. */
+export interface FocusConfig { enabled: boolean; freeze: string[]; skip: string[] }
+export interface FocusStatus { running: boolean; foreground: string; throttled: string[]; frozen: string[]; apps: string[] }
+
+export interface Settings { lang: Lang; createRestorePoint: boolean; checkUpdates: boolean; lastScan: ScanResult | null; focus: FocusConfig }
 
 export interface StartupItem { id: string; name: string; command: string; scope: "user" | "machine"; source: "registry" | "folder"; enabled: boolean }
 export interface InstalledApp { id: string; kind: "program" | "store"; name: string; publisher: string; version: string; sizeMb: number }
@@ -117,6 +121,7 @@ export interface Api {
   startup: { list(): Promise<StartupItem[]>; set(id: string, enabled: boolean): Promise<boolean> };
   apps: { list(): Promise<InstalledApp[]>; uninstall(id: string): Promise<UninstallResult>; removeLeftovers(ids: string[]): Promise<number> };
   history: { list(): Promise<HistoryEntry[]>; clear(): Promise<void> };
+  focus: { status(): Promise<FocusStatus> };
   /** export: false when cancelled. import: the tweak ids in the chosen file (empty when it is unreadable or foreign), null when cancelled. */
   profile: { export(): Promise<boolean>; import(): Promise<string[] | null> };
   /** check: null when up to date or offline. install: downloads, verifies and starts the installer, then the app quits. */
