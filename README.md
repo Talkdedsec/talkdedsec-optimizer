@@ -41,7 +41,7 @@ each one undoable with a click. No account, no telemetry.
 
 ## Install
 
-1. Download `Talkdedsec-Setup-1.2.0.exe` from the [latest release](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest). Prefer no installation? Take `Talkdedsec-Portable-1.1.0.exe` instead.
+1. Download `Talkdedsec-Setup-1.2.1.exe` from the [latest release](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest). Prefer no installation? Take `Talkdedsec-Portable-1.1.0.exe` instead.
 2. Run it. The installer is not code-signed yet, so SmartScreen may ask: choose **More info > Run anyway**.
 3. Start Talkdedsec. It asks for administrator rights because most tweaks write under `HKEY_LOCAL_MACHINE` or change services.
 
