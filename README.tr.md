@@ -40,7 +40,7 @@ her biri tek tıkla geri alınır. Hesap yok, telemetri yok.
 
 ## Kurulum
 
-1. [Son sürümden](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest) `Talkdedsec-Setup-1.1.0.exe` dosyasını indir. Kurulum istemiyorsan `Talkdedsec-Portable-1.1.0.exe` dosyasını al.
+1. [Son sürümden](https://github.com/Talkdedsec/talkdedsec-optimizer/releases/latest) `Talkdedsec-Setup-1.2.0.exe` dosyasını indir. Kurulum istemiyorsan `Talkdedsec-Portable-1.1.0.exe` dosyasını al.
 2. Çalıştır. Kurulum dosyası henüz kod imzalı değil; SmartScreen sorarsa **Ek bilgi > Yine de çalıştır** de.
 3. Talkdedsec'i aç. Ayarların çoğu `HKEY_LOCAL_MACHINE` altına yazdığı ya da servisleri değiştirdiği için yönetici yetkisi ister.
 
