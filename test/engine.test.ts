@@ -80,10 +80,11 @@ test("focus mode throttles, freezes and restores a process", { skip: process.pla
 
   const victim = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
   try {
-    const r = await runJson<{ applied: boolean; throttled: string; frozen: boolean; restored: string; thawed: boolean; missing: boolean }>(`${FOCUS_LIB}
+    const r = await runJson<{ original: string; applied: boolean; throttled: string; frozen: boolean; restored: string; thawed: boolean; missing: boolean }>(`${FOCUS_LIB}
 $id=${victim.pid}
 function Suspended{ $t=@((Get-Process -Id $id).Threads); @($t|Where-Object{$_.ThreadState -eq 'Wait' -and $_.WaitReason -eq 'Suspended'}).Count -eq $t.Count }
 $o=[ordered]@{}
+$o.original="$((Get-Process -Id $id).PriorityClass)"
 $o.applied=[TlkFocus]::Apply($id,2)
 $o.throttled="$((Get-Process -Id $id).PriorityClass)"
 [TlkFocus]::Apply($id,3)|Out-Null
@@ -93,7 +94,9 @@ $o.restored="$((Get-Process -Id $id).PriorityClass)"
 $o.thawed=-not (Suspended)
 $o.missing=[TlkFocus]::Apply(999999,2)
 $o|ConvertTo-Json -Compress`);
-    assert.deepEqual(r, { applied: true, throttled: "BelowNormal", frozen: true, restored: "Normal", thawed: true, missing: false });
+    // restored is whatever the process started with: a CI runner starts its children below normal
+    assert.deepEqual(r, { original: r!.original, applied: true, throttled: "BelowNormal", frozen: true, restored: r!.original, thawed: true, missing: false });
+    assert.match(r!.original, /^(Normal|BelowNormal|AboveNormal)$/);
   } finally {
     victim.kill();
   }
